@@ -1,8 +1,18 @@
-__pycache__
+# Python / Django
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+media/
+
+# env files
+.env*
 
 # dependencies
 node_modules/
-/.pnp
+.pnp
 .pnp.*
 .yarn/*
 !.yarn/patches
@@ -29,7 +39,3 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
