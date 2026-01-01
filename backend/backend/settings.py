@@ -1,13 +1,12 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
-
+load_dotenv()
 
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-load_dotenv(BASE_DIR.parent / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
@@ -35,7 +34,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'rest_framework',
 ]
-AUTH_USER_MODEL = "ecommerce.User"
 
 
 MIDDLEWARE = [
@@ -121,6 +119,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 MEDIA_URL = '/media/'
+
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
