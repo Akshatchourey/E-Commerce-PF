@@ -1,5 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.http import JsonResponse
 
-# Create your views here.
 def home(request):
-    return HttpResponse("Hi This is home page of our website!!")
+    return JsonResponse({"message": "Welcome to the E-Commerce API", "status": "running"})

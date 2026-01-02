@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, UserManager
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 import uuid
@@ -14,34 +14,58 @@ def generate_order_id():
     return f"ORD-{uuid.uuid4().hex[:8]}"
 
 class User(AbstractUser):
-    id = models.BigAutoField(primary_key=True)
-    public_user_id = models.CharField(max_length=30, unique=True, editable=False, default=generate_user_id, db_index=True)
+    objects = None
+    class CustomUserManager(UserManager):
+        use_in_migrations = True
+        def _create_user(self, email, password, **extra_fields):
+            if not email:
+                raise ValueError('The Email must be set')
+            email = self.normalize_email(email)
+            user = self.model(email=email, **extra_fields)
+            user.set_password(password)
+            user.save(using=self._db)
+            return user
+        def create_user(self, email, password=None, **extra_fields):
+            extra_fields.setdefault('is_staff', False)
+            extra_fields.setdefault('is_superuser', False)
+            return self._create_user(email, password, **extra_fields)
+        def create_superuser(self, email, password, **extra_fields):
+            extra_fields.setdefault('is_staff', True)
+            extra_fields.setdefault('is_superuser', True)
+            if extra_fields.get('is_staff') is not True:
+                raise ValueError('Superuser must have is_staff=True.')
+            if extra_fields.get('is_superuser') is not True:
+                raise ValueError('Superuser must have is_superuser=True.')
+            return self._create_user(email, password, **extra_fields)
 
+    # Role choices
+    ROLE_CUSTOMER = 'customer'
+    ROLE_SELLER = 'seller'
+    ROLE_ADMIN = 'admin'
+    
     ROLE_CHOICES = (
-        ("CUSTOMER", "Customer"),
-        ("SELLER", "Seller / Employee"),
-        ("OWNER", "Owner"),
+        (ROLE_CUSTOMER, 'Customer'),
+        (ROLE_SELLER, 'Seller'),
+        (ROLE_ADMIN, 'Admin'),
     )
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="CUSTOMER", db_index=True)
 
+    # Disable the default username field
+    username = None
+    
     email = models.EmailField(unique=True)
-    phone_number = models.CharField(max_length=15)
+    first_name = models.CharField(max_length=150)
+    last_name = models.CharField(max_length=150)
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default=ROLE_CUSTOMER)
+    
     is_email_verified = models.BooleanField(default=False)
-
-    USERNAME_FIELD = "email"
-    REQUIRED_FIELDS = ["username"]
-
-    def __str__(self):
-        return f"{self.public_user_id} - {self.email}"
-
-class EmailOTP(models.Model):
-    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    otp_hash = models.CharField(max_length=255)
-    expires_at = models.DateTimeField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    # is_active and date_joined (created_at) are inherited from AbstractUser
+    
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
-        return f"OTP for {self.user.email}"
+        return self.email
+    objects = CustomUserManager()
 
 class Product(models.Model):
     id = models.BigAutoField(primary_key=True)

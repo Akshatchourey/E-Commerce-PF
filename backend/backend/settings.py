@@ -34,6 +34,9 @@ INSTALLED_APPS = [
 
     'corsheaders',
     'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 AUTH_USER_MODEL = "ecommerce.User"
 
@@ -47,6 +50,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'ecommerce.middleware.middleware.RoleMiddleware',
 ]
 
 ROOT_URLCONF = 'backend.urls'
@@ -73,16 +77,25 @@ WSGI_APPLICATION = 'backend.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        "NAME": os.environ.get('DB_NAME',''),
-        "USER": os.environ.get('DB_USER_ROOT',''),
-        "PASSWORD": os.environ.get('DB_PASSWORD_ROOT',''),
-        "HOST": os.environ.get('DB_HOST',''),
-        "PORT": "5432",
+DB_NAME = os.environ.get('DB_NAME', '')
+if DB_NAME:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql',
+            "NAME": DB_NAME,
+            "USER": os.environ.get('DB_USER_ROOT',''),
+            "PASSWORD": os.environ.get('DB_PASSWORD_ROOT',''),
+            "HOST": os.environ.get('DB_HOST',''),
+            "PORT": "5432",
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 
 # Password validation
@@ -134,3 +147,34 @@ CORS_ALLOWED_ORIGINS = [
 ]
 CORS_ALLOW_CREDENTIALS = True  # for frontend to send cookies or authentication headers
 CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"] # for session-based authentication
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.AllowAny',
+    ),
+}
+
+ROLE_ACCESS_RULES = {
+    "/admin/": ["admin"],
+    "/auth/": ["customer", "seller", "admin"],
+    "/api/admin-dashboard/": ["admin"],
+    "/seller/": ["seller", "admin"],
+    "/orders/": ["customer", "seller", "admin"],
+    "/products/": ["customer", "seller", "admin"],
+    "/wishlist/": ["customer"],
+    "/cart/": ["customer"],
+}
+PUBLIC_PATHS = [
+    "/auth/signup/",
+    "/auth/login/",
+    "/auth/jwt/create/",
+    "/auth/jwt/refresh/",
+    "/auth/jwt/verify/",
+    "/auth/forgot-password/",
+    "/auth/change-password/",
+    "/auth/",
+]
