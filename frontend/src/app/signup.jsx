@@ -2,21 +2,20 @@ export default function Signup() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
       
-      {/* Outer Container */}
+
       <div className="bg-[#8B735E] p-6">
         
-        {/* Main Card */}
+
         <div className="flex w-[900px] h-[460px] bg-[#8B735E]">
 
-          {/* LEFT IMAGE PLACEHOLDER */}
+   
           <div className="w-1/2 bg-[#8B735E] flex items-center justify-center">
-            {/* Image will go here later */}
           </div>
 
-          {/* RIGHT FORM SECTION */}
+
           <div className="w-1/2 bg-[#E6C9A0] px-12 py-10 flex flex-col justify-between">
 
-            {/* Top */}
+
             <div>
               <h1 className="text-2xl font-serif text-black mb-2">
                 Crafted Roots
@@ -26,7 +25,7 @@ export default function Signup() {
                 Create Account
               </p>
 
-              {/* OAuth */}
+
               <div className="flex gap-3 mb-4">
                 <button className="flex-1 border border-[#3A2E25] text-xs py-1 rounded bg-white text-black">
                   Sign up with Google
@@ -40,7 +39,7 @@ export default function Signup() {
                 — OR —
               </div>
 
-              {/* Inputs */}
+      
               <div className="space-y-3">
                 <input
                   type="text"
@@ -68,7 +67,6 @@ export default function Signup() {
               </div>
             </div>
 
-            {/* Bottom */}
             <div>
               <button className="w-full bg-black text-white text-sm py-2 rounded mt-5">
                 Create Account
