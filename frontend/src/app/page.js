@@ -1,5 +1,7 @@
 import Image from "next/image";
 import ProductDetails from "@/app/product/productDetails"
+import Login from "@/app/sign-in/login"
+import Signup from "./sign-in/signUp";
 import Navbar from "@/components/navbar/navbar"
 export default function Home() {
   return (
