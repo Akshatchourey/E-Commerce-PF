@@ -6,7 +6,7 @@ export default function Login() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
       <div className="bg-[#8B735E] p-6">
-        <div className="flex w-900px h-460px">
+        <div className="flex w-[900px] h-[460px]">
           <div className="w-1/2 bg-[#8B735E] flex items-center justify-center" />
           <div className="w-1/2 bg-[#E6C9A0] px-14 py-12 flex flex-col justify-between">
             <div>
