@@ -31,6 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ecommerce',
+    'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'corsheaders',
     'rest_framework',

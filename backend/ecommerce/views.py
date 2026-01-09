@@ -1,13 +1,11 @@
 from django.http import HttpResponse
 from django.contrib.auth.models import Group
-
 from rest_framework.decorators import api_view ,permission_classes
 from rest_framework.response import Response
-
 from .decorators import allowed_users
-from .models import Product
-from .serializers import ProductListSerializer ,RegisterSerializer, LoginSerializer
-
+from .models import Product , Offer
+from .serializers import OfferApplySerializer, ProductListSerializer ,RegisterSerializer, LoginSerializer, ProductDetailSerializer
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -64,3 +62,35 @@ def logout(request):
         return Response({"message": "Logged out successfully"})
     except Exception:
         return Response({"error": "Invalid token"}, status=400)
+    
+
+@api_view(["GET"])
+def product_detail(request, public_product_id):
+    product = get_object_or_404(
+        Product,
+        public_product_id=public_product_id,
+        is_active=True
+    )
+
+    serializer = ProductDetailSerializer(
+        product,
+        context={"request": request}
+    )
+
+    return Response(serializer.data)
+
+
+@api_view(["POST"])
+def apply_offer(request):
+    """
+    Body:
+    {
+        "coupon": "FLAT500",
+        "cart_total": 600
+    }
+    """
+    serializer = OfferApplySerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    return Response(serializer.validated_data)
+
+
