@@ -170,3 +170,24 @@ class WishlistSerializer(serializers.ModelSerializer):
         model = Wishlist
         fields = ['product']
 
+class AddToCartSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+    quantity = serializers.IntegerField(min_value=1)
+
+class UpdateCartSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+    quantity = serializers.IntegerField(min_value=1)
+
+class AddToWishlistSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+
+class RemoveFromWishlistSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+
+class RemoveFromCartSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+
+class TransferToCartSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+    quantity = serializers.IntegerField(min_value=1)
+

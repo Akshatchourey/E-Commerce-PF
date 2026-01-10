@@ -7,7 +7,7 @@ from .models import Product , Offer
 from .serializers import OfferApplySerializer, ProductListSerializer ,RegisterSerializer, LoginSerializer, ProductDetailSerializer
 from django.shortcuts import get_object_or_404
 from .models import Product, CartItem, Wishlist
-from .serializers import ProductListSerializer ,RegisterSerializer, LoginSerializer, CartItemSerializer, WishlistSerializer
+from .serializers import ProductListSerializer ,RegisterSerializer, LoginSerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer
 
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -112,3 +112,149 @@ def sync_cart_wishlist(request):
         "cart": cart_serializer.data,
         "wishlist": wishlist_serializer.data
     })
+
+@api_view(["POST", "PATCH", "DELETE"])
+@permission_classes([IsAuthenticated])
+def manage_cart(request):
+    user = request.user
+
+    if request.method == "POST":
+        # Add to cart
+        serializer = AddToCartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product_id = serializer.validated_data["product_id"]
+        quantity = serializer.validated_data["quantity"]
+
+        try:
+            product = Product.objects.get(public_product_id=product_id, is_active=True)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+
+        cart_item, created = CartItem.objects.get_or_create(
+            user=user,
+            product=product,
+            defaults={"quantity": quantity}
+        )
+        if not created:
+            cart_item.quantity += quantity
+            cart_item.save()
+
+        return Response({"message": "Item added to cart", "quantity": cart_item.quantity})
+
+    elif request.method == "PATCH":
+        # Update cart item quantity
+        serializer = UpdateCartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product_id = serializer.validated_data["product_id"]
+        quantity = serializer.validated_data["quantity"]
+
+        try:
+            product = Product.objects.get(public_product_id=product_id, is_active=True)
+            cart_item = CartItem.objects.get(user=user, product=product)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not in cart"}, status=404)
+
+        cart_item.quantity = quantity
+        cart_item.save()
+
+        return Response({"message": "Cart item updated", "quantity": cart_item.quantity})
+
+    elif request.method == "DELETE":
+        # Remove item from cart
+        serializer = RemoveFromCartSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product_id = serializer.validated_data["product_id"]
+
+        try:
+            product = Product.objects.get(public_product_id=product_id, is_active=True)
+            cart_item = CartItem.objects.get(user=user, product=product)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+        except CartItem.DoesNotExist:
+            return Response({"error": "Item not in cart"}, status=404)
+
+        cart_item.delete()
+        return Response({"message": "Item removed from cart"})
+
+@api_view(["POST", "DELETE"])
+@permission_classes([IsAuthenticated])
+def manage_wishlist(request):
+    user = request.user
+
+    if request.method == "POST":
+        # Add to wishlist
+        serializer = AddToWishlistSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product_id = serializer.validated_data["product_id"]
+
+        try:
+            product = Product.objects.get(public_product_id=product_id, is_active=True)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+
+        wishlist_item, created = Wishlist.objects.get_or_create(
+            user=user,
+            product=product
+        )
+        if created:
+            return Response({"message": "Item added to wishlist"})
+        else:
+            return Response({"message": "Item already in wishlist"})
+
+    elif request.method == "DELETE":
+        # Remove from wishlist
+        serializer = RemoveFromWishlistSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        product_id = serializer.validated_data["product_id"]
+
+        try:
+            product = Product.objects.get(public_product_id=product_id, is_active=True)
+            wishlist_item = Wishlist.objects.get(user=user, product=product)
+        except Product.DoesNotExist:
+            return Response({"error": "Product not found"}, status=404)
+        except Wishlist.DoesNotExist:
+            return Response({"error": "Item not in wishlist"}, status=404)
+
+        wishlist_item.delete()
+        return Response({"message": "Item removed from wishlist"})
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def transfer_to_cart(request):
+    """
+    Transfer item from wishlist to cart
+    Body: {"product_id": "PRD-...", "quantity": 1}
+    """
+    user = request.user
+    serializer = AddToCartSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    product_id = serializer.validated_data["product_id"]
+    quantity = serializer.validated_data["quantity"]
+
+    try:
+        product = Product.objects.get(public_product_id=product_id, is_active=True)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
+
+    # Check if item is in wishlist
+    try:
+        wishlist_item = Wishlist.objects.get(user=user, product=product)
+    except Wishlist.DoesNotExist:
+        return Response({"error": "Item not in wishlist"}, status=404)
+
+    # Add to cart
+    cart_item, created = CartItem.objects.get_or_create(
+        user=user,
+        product=product,
+        defaults={"quantity": quantity}
+    )
+    if not created:
+        cart_item.quantity += quantity
+        cart_item.save()
+
+    # Remove from wishlist
+    wishlist_item.delete()
+
+    return Response({"message": "Item transferred from wishlist to cart", "cart_quantity": cart_item.quantity})

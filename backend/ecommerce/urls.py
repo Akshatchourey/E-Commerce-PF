@@ -16,5 +16,8 @@ urlpatterns = [
     path("api/apply-offer/", views.apply_offer, name="apply_offer"),
 
     path('api/sync-cart-wishlist/', views.sync_cart_wishlist, name='sync_cart_wishlist'),
+    path('api/cart/', views.manage_cart, name='manage_cart'),
+    path('api/wishlist/', views.manage_wishlist, name='manage_wishlist'),
+    path('api/transfer-to-cart/', views.transfer_to_cart, name='transfer_to_cart'),
 
 ]
