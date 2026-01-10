@@ -151,4 +151,4 @@ CORS_ALLOWED_ORIGINS = [
     # "https://abc.com", # Later in production domain
 ]
 CORS_ALLOW_CREDENTIALS = True  # for frontend to send cookies or authentication headers
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"] # for session-based authentication
+CSRF_TRUSTED_ORIGINS = ["http://localhost:3000"]  # for session-based authentication
