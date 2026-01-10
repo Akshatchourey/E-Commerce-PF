@@ -10,11 +10,14 @@ def main():
     try:
         from django.core.management import execute_from_command_line
     except ImportError as exc:
-        raise ImportError(
-            "Couldn't import Django. Are you sure it's installed and "
-            "available on your PYTHONPATH environment variable? Did you "
-            "forget to activate a virtual environment?"
-        ) from exc
+        sys.stderr.write("ERROR: Couldn't import Django.\n")
+        sys.stderr.write("Make sure a virtual environment is activated and Django is installed.\n")
+        sys.stderr.write("Recommended steps (Windows):\n")
+        sys.stderr.write("  python -m venv .venv\n")
+        sys.stderr.write("  .\\.venv\\Scripts\\activate\n")
+        sys.stderr.write("  pip install -r requirements.txt  # or pip install Django\n")
+        sys.stderr.write("Then re-run this command.\n")
+        sys.exit(1)
     execute_from_command_line(sys.argv)
 
 
