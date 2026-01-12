@@ -1,15 +1,16 @@
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
-
-from .models import Product,, Offer CartItem, Wishlist
+from .models import Order
+from .serializers import OrderSerializer
+from .models import Product, Offer, CartItem, Wishlist
 from .decorators import allowed_users
-from .serializers import ProductListSerializer ,RegisterSerializer, LoginSerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer
+from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer,TransferToWishlistSerializer
 
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.permissions import IsAuthenticated
+
 from rest_framework.decorators import api_view, permission_classes
 
 # Create your views here.
@@ -256,3 +257,53 @@ def transfer_to_cart(request):
     wishlist_item.delete()
 
     return Response({"message": "Item transferred from wishlist to cart", "cart_quantity": cart_item.quantity})
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_orders(request):
+    """
+    Fetch all orders for the authenticated user
+    """
+    user = request.user
+    orders = Order.objects.filter(user=user).order_by("-created_at")
+    serializer = OrderSerializer(orders, many=True, context={"request": request})
+    return Response({
+        "count": orders.count(),
+        "orders": serializer.data
+    })
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def transfer_to_wishlist(request):
+    """
+    Transfer item from cart to wishlist
+    Body: {"product_id": "PRD-...", "quantity": 1}
+    """
+    user = request.user
+    serializer = TransferToWishlistSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    product_id = serializer.validated_data["product_id"]
+    quantity = serializer.validated_data["quantity"]
+
+    try:
+        product = Product.objects.get(public_product_id=product_id, is_active=True)
+    except Product.DoesNotExist:
+        return Response({"error": "Product not found"}, status=404)
+
+    # Check if item is in cart
+    try:
+        cart_item = CartItem.objects.get(user=user, product=product)
+    except CartItem.DoesNotExist:
+        return Response({"error": "Item not in cart"}, status=404)
+
+    # Add to wishlist
+    wishlist_item, created = Wishlist.objects.get_or_create(
+        user=user,
+        product=product
+    )
+    if created:
+        # Remove from cart
+        cart_item.delete()
+        return Response({"message": "Item transferred from cart to wishlist"})
+    else:
+        return Response({"message": "Item already in wishlist"})
