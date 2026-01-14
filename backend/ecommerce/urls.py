@@ -8,11 +8,7 @@ urlpatterns = [
     path('api/register/', views.register),
     path('api/login/', views.login),
     path('api/logout/', views.logout),
-    path(
-        "api/products/<str:public_product_id>/",
-        views.product_detail,
-        name="product_detail"
-    ),
+    path("api/product/<str:public_product_id>/",views.product_detail,name="product_detail"),
     path("api/apply-offer/", views.apply_offer, name="apply_offer"),
 
     path('api/sync-cart-wishlist/', views.sync_cart_wishlist, name='sync_cart_wishlist'),

@@ -6,11 +6,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import Image from "next/image";
-import { 
-  ShoppingBag, 
-  Lock, 
-  Mail, 
-  MapPin, 
+import {
+  ShoppingBag,
+  Lock,
+  Mail,
+  MapPin,
   Tag
 } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -24,7 +24,7 @@ export default function CheckoutPage() {
   const [applyingCoupon, setApplyingCoupon] = useState(false);
   const [couponError, setCouponError] = useState(false);
   const [giftWrap, setGiftWrap] = useState(false);
-  const [formData, setFormData] = useState({ //getch from user database some aspects 
+  const [formData, setFormData] = useState({ //getch from user database some aspects
     email: "",
     country: "India",
     firstName: "",
@@ -50,7 +50,7 @@ export default function CheckoutPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setCartItems(data);
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
 
     setApplyingCoupon(true);
     setCouponError(false);
-    
+
     try {
       const response = await fetch('/api/apply-offer/', {
         method: 'POST',
@@ -99,7 +99,7 @@ export default function CheckoutPage() {
         // Trigger shake and red highlight
         setCouponError(true);
         setDiscountData(null);
-        
+
         // Remove shake effect after animation completes
         setTimeout(() => setCouponError(false), 600);
       }
@@ -113,8 +113,8 @@ export default function CheckoutPage() {
   };
 
   const handleCheckout = async () => {
-    if (!formData.email || !formData.firstName || !formData.lastName || 
-        !formData.address || !formData.city || !formData.state || 
+    if (!formData.email || !formData.firstName || !formData.lastName ||
+        !formData.address || !formData.city || !formData.state ||
         !formData.zipCode || !formData.phone) {
       alert('Please fill in all required fields');
       return;
@@ -124,11 +124,11 @@ export default function CheckoutPage() {
       cartItems,
       total: finalTotal
     });
-    
+
     alert('Payment processing will be integrated with Razorpay');
   };
 
-  const subtotal = cartItems.reduce((sum, item) => 
+  const subtotal = cartItems.reduce((sum, item) =>
     sum + (parseFloat(item.product.price) * item.quantity), 0
   );
   const giftWrapCost = giftWrap ? 10.00 : 0;
@@ -166,7 +166,7 @@ export default function CheckoutPage() {
           10%, 30%, 50%, 70%, 90% { transform: translateX(-8px); }
           20%, 40%, 60%, 80% { transform: translateX(8px); }
         }
-        
+
         .shake-animation {
           animation: shake 0.5s ease-in-out;
         }
@@ -182,7 +182,7 @@ export default function CheckoutPage() {
             </Button>
           </Link>
         </div>
-        
+
         <div className="flex items-center justify-center gap-4 text-sm">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-full bg-green-500 text-white flex items-center justify-center font-semibold">
@@ -236,7 +236,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="space-y-4">
-                  <select 
+                  <select
                     name="country"
                     value={formData.country}
                     onChange={handleInputChange}
@@ -249,75 +249,75 @@ export default function CheckoutPage() {
                   </select>
 
                   <div className="grid md:grid-cols-2 gap-4">
-                    <Input 
+                    <Input
                       name="firstName"
-                      placeholder="First Name" 
+                      placeholder="First Name"
                       value={formData.firstName}
                       onChange={handleInputChange}
-                      className="h-12" 
+                      className="h-12"
                       required
                     />
-                    <Input 
+                    <Input
                       name="lastName"
-                      placeholder="Last Name" 
+                      placeholder="Last Name"
                       value={formData.lastName}
                       onChange={handleInputChange}
-                      className="h-12" 
+                      className="h-12"
                       required
                     />
                   </div>
 
-                  <Input 
+                  <Input
                     name="address"
-                    placeholder="Street Address" 
+                    placeholder="Street Address"
                     value={formData.address}
                     onChange={handleInputChange}
-                    className="h-12" 
+                    className="h-12"
                     required
                   />
 
-                  <Input 
+                  <Input
                     name="apartment"
-                    placeholder="Apartment, suite, etc. (optional)" 
+                    placeholder="Apartment, suite, etc. (optional)"
                     value={formData.apartment}
                     onChange={handleInputChange}
-                    className="h-12" 
+                    className="h-12"
                   />
 
                   <div className="grid md:grid-cols-3 gap-4">
-                    <Input 
+                    <Input
                       name="city"
-                      placeholder="City" 
+                      placeholder="City"
                       value={formData.city}
                       onChange={handleInputChange}
-                      className="h-12" 
+                      className="h-12"
                       required
                     />
-                    <Input 
+                    <Input
                       name="state"
-                      placeholder="State" 
+                      placeholder="State"
                       value={formData.state}
                       onChange={handleInputChange}
-                      className="h-12" 
+                      className="h-12"
                       required
                     />
-                    <Input 
+                    <Input
                       name="zipCode"
-                      placeholder="ZIP Code" 
+                      placeholder="ZIP Code"
                       value={formData.zipCode}
                       onChange={handleInputChange}
-                      className="h-12" 
+                      className="h-12"
                       required
                     />
                   </div>
 
-                  <Input 
+                  <Input
                     name="phone"
-                    placeholder="Phone Number" 
-                    type="tel" 
+                    placeholder="Phone Number"
+                    type="tel"
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className="h-12" 
+                    className="h-12"
                     required
                   />
                 </div>
@@ -355,8 +355,8 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <div className="w-20 h-24 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 overflow-hidden">
                         {item.product.image ? (
-                          <Image 
-                            src={item.product.image} 
+                          <Image
+                            src={item.product.image}
                             alt={item.product.title}
                             className="w-full h-full object-cover"
                             width={80}
@@ -407,8 +407,8 @@ export default function CheckoutPage() {
                     value={discountCode}
                     onChange={(e) => setDiscountCode(e.target.value)}
                     className={`h-10 transition-all ${
-                      couponError 
-                        ? 'border-red-500 border-2 focus:ring-red-500 bg-red-50' 
+                      couponError
+                        ? 'border-red-500 border-2 focus:ring-red-500 bg-red-50'
                         : ''
                     }`}
                   />
@@ -423,15 +423,15 @@ export default function CheckoutPage() {
                 </div>
                 {discountData && (
                   <p className="text-green-600 text-sm mt-2 flex items-center gap-1">
-                    <span className="font-medium">✓</span> 
-                    {discountData.discount_type === 'PERCENT' 
+                    <span className="font-medium">✓</span>
+                    {discountData.discount_type === 'PERCENT'
                       ? `${discountData.discount_value}% discount applied!`
                       : `$${discountData.discount_value} discount applied!`}
                   </p>
                 )}
                 {couponError && !discountData && (
                   <p className="text-red-600 text-sm mt-2 flex items-center gap-1">
-                    <span className="font-medium">✗</span> 
+                    <span className="font-medium">✗</span>
                     Invalid coupon code
                   </p>
                 )}
@@ -465,7 +465,7 @@ export default function CheckoutPage() {
                   <span className="text-2xl font-bold text-gray-900">${finalTotal.toFixed(2)}</span>
                 </div>
               </div>
-              <Button 
+              <Button
                 onClick={handleCheckout}
                 className="w-full h-12 bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-md mb-3"
               >

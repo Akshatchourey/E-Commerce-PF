@@ -5,8 +5,11 @@ from .models import Order
 from .serializers import OrderSerializer
 from .models import Product, Offer, CartItem, Wishlist
 from .decorators import allowed_users
-from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer,TransferToWishlistSerializer
-
+from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
+    OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, \
+    AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer, \
+    TransferToWishlistSerializer
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,18 +28,39 @@ def seller_dashboard(request):
     return HttpResponse("only seller logged can see this")
 
 
+class ProductPagination(PageNumberPagination):
+    page_size = 9
+    page_size_query_param = "page_size"
+    max_page_size = 30
+
+
 @api_view(["GET"])
 def product_list(request):
     products = Product.objects.filter(is_active=True).order_by("-created_at")
 
+    min_price = request.GET.get("min_price")
+    max_price = request.GET.get("max_price")
+    category = request.GET.get("category")
+    search = request.GET.get("search")
+    if min_price:
+        products = products.filter(price__gte=min_price)
+    if max_price:
+        products = products.filter(price__lte=max_price)
+    if category:
+        products = products.filter(category__iexact=category)
+    if search:
+        products = products.filter(title__icontains=search)
+
+    paginator = ProductPagination()
+    paginated_products = paginator.paginate_queryset(products, request)
+
     serializer = ProductListSerializer(
-        products,
+        paginated_products,
         many=True,
         context={"request": request}
     )
 
-    return Response({
-        "count": products.count(),
+    return paginator.get_paginated_response({
         "products": serializer.data
     })
 
@@ -94,7 +118,6 @@ def apply_offer(request):
     serializer = OfferApplySerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     return Response(serializer.validated_data)
-
 
 
 @api_view(["GET"])

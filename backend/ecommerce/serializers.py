@@ -5,6 +5,8 @@ from .models import *
 from django.contrib.auth.models import User, Group
 from rest_framework_simplejwt.tokens import RefreshToken
 from decimal import Decimal
+
+
 class ProductListSerializer(serializers.ModelSerializer):
     image = serializers.SerializerMethodField()
     seller = serializers.CharField(source="seller.username")
@@ -25,7 +27,9 @@ class ProductListSerializer(serializers.ModelSerializer):
     def get_image(self, obj):
         request = self.context.get("request")
         if obj.image and request:
-            return request.build_absolute_uri(obj.image.url)
+            return request.build_absolute_uri(obj.image.url).replace(
+                "127.0.0.1", "localhost"
+            )
         return None
     
 class RegisterSerializer(serializers.ModelSerializer):
@@ -72,6 +76,7 @@ class LoginSerializer(serializers.Serializer):
             "username": user.username,
             "role": user.groups.first().name if user.groups.exists() else "user"
         }
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     user = serializers.CharField(source="user.username")
@@ -156,6 +161,8 @@ class OfferApplySerializer(serializers.Serializer):
             "discount_amount": round(discount, 2),
             "final_amount": round(final_amount, 2),
         }
+
+
 class CartItemSerializer(serializers.ModelSerializer):
     product = ProductListSerializer()
 

@@ -25,7 +25,7 @@ export default function CartPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         setCartItems(data);
@@ -56,8 +56,8 @@ export default function CartPage() {
       });
 
       if (response.ok) {
-        setCartItems(cartItems.map(item => 
-          item.product.public_product_id === productId 
+        setCartItems(cartItems.map(item =>
+          item.product.public_product_id === productId
             ? { ...item, quantity: newQuantity }
             : item
         ));
@@ -93,7 +93,7 @@ export default function CartPage() {
       console.error('Error removing item:', error);
     }
   };
-  const subtotal = cartItems.reduce((sum, item) => 
+  const subtotal = cartItems.reduce((sum, item) =>
     sum + (parseFloat(item.product.price) * item.quantity), 0
   );
   const giftWrapCost = giftWrap ? 10.00 : 0;
@@ -136,14 +136,14 @@ export default function CartPage() {
               ) : (
                 <>
                   {cartItems.map((item) => (
-                    <div 
-                      key={item.product.public_product_id} 
+                    <div
+                      key={item.product.public_product_id}
                       className="flex gap-6 pb-6 border-b mb-6 last:border-b-0"
                     >
                       <div className="w-32 h-32 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 shrink-0 shadow-md overflow-hidden">
                         {item.product.image ? (
-                          <Image 
-                            src={item.product.image} 
+                          <Image
+                            src={item.product.image}
                             alt={item.product.title}
                             className="w-full h-full object-cover"
                           />
@@ -177,7 +177,7 @@ export default function CartPage() {
                               variant="ghost"
                               className="h-8 w-8 hover:bg-white"
                               onClick={() => updateQuantity(
-                                item.product.public_product_id, 
+                                item.product.public_product_id,
                                 item.quantity - 1
                               )}
                             >
@@ -191,7 +191,7 @@ export default function CartPage() {
                               variant="ghost"
                               className="h-8 w-8 hover:bg-white"
                               onClick={() => updateQuantity(
-                                item.product.public_product_id, 
+                                item.product.public_product_id,
                                 item.quantity + 1
                               )}
                             >
@@ -265,14 +265,14 @@ export default function CartPage() {
                     </Button>
                   </Link>
                 ) : (
-                  <Button 
+                  <Button
                     className="w-full mb-3 bg-gray-400 text-white h-12 text-base font-semibold cursor-not-allowed"
                     disabled
                   >
                     Proceed to Checkout
                   </Button>
                 )}
-              
+
               <Link href="/shop">
                 <Button variant="outline" className="w-full">
                   Continue Shopping
