@@ -191,3 +191,37 @@ class TransferToCartSerializer(serializers.Serializer):
     product_id = serializers.CharField()
     quantity = serializers.IntegerField(min_value=1)
 
+class OrderSerializer(serializers.ModelSerializer):
+    items = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Order
+        fields = [
+            "public_order_id",
+            "status",
+            "total_amount",
+            "razorpay_order_id",
+            "razorpay_payment_id",
+            "razorpay_signature",
+            "payment_provider",
+            "shipping_address",
+            "phone_number",
+            "created_at",
+            "items"
+        ]
+
+    def get_items(self, obj):
+        order_items = obj.items.all()
+        return OrderItemSerializer(order_items, many=True).data
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    product = ProductListSerializer()
+
+    class Meta:
+        model = OrderItem
+        fields = ["product", "quantity", "price_at_purchase"]
+
+class TransferToWishlistSerializer(serializers.Serializer):
+    product_id = serializers.CharField()
+    quantity = serializers.IntegerField(min_value=1)
+
