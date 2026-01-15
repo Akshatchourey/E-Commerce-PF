@@ -1,5 +1,7 @@
 from django.urls import path
+from rest_framework_simplejwt.views import TokenRefreshView
 from .import views
+from .import views_payment as views2
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -8,6 +10,7 @@ urlpatterns = [
     path('api/register/', views.register),
     path('api/login/', views.login),
     path('api/logout/', views.logout),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path("api/product/<str:public_product_id>/",views.product_detail,name="product_detail"),
     path("api/apply-offer/", views.apply_offer, name="apply_offer"),
 
@@ -17,5 +20,10 @@ urlpatterns = [
     path('api/transfer-to-cart/', views.transfer_to_cart, name='transfer_to_cart'),
     path('api/user-orders/', views.user_orders, name='user_orders'),
     path('api/transfer-to-wishlist/', views.transfer_to_wishlist, name='transfer_to_wishlist'),
+
+    # Razorpay payment urls
+    path('api/create-order/', views2.CreateRazorpayOrderView.as_view(), name='create-razorpay-order'),
+    path('api/verify-payment/', views2.VerifyRazorpayPaymentView.as_view(), name='verify-razorpay-payment'),
+    # path('webhook/razorpay/', views2.RazorpayWebhookView.as_view(), name='razorpay-webhook'),
 
 ]
