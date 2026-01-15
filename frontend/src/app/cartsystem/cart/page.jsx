@@ -25,6 +25,7 @@ export default function CartPage() {
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`
         }
       });
+      
 
       if (response.ok) {
         const data = await response.json();
