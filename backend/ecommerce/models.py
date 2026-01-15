@@ -70,7 +70,7 @@ class CartItem(models.Model):
         unique_together = ("user", "product")
 
     def __str__(self):
-        return f"{self.product.title} x {self.quantity}"
+        return f"{self.user.username} x {self.product.title} x {self.quantity}"
 
 class Order(models.Model):
     id = models.BigAutoField(primary_key=True)

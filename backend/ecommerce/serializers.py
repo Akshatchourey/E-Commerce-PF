@@ -233,10 +233,18 @@ class TransferToWishlistSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1)
 
 
+# Payment serializers
+class OrderItemCreationSerializer(serializers.Serializer):
+    product_id = serializers.CharField(max_length=30)
+    quantity = serializers.IntegerField(min_value=1)
+
+
 class OrderCreationSerializer(serializers.Serializer):
-    items = OrderItemSerializer(many=True)
+    items = OrderItemCreationSerializer(many=True)
     shipping_address = serializers.CharField(max_length=255)
     phone_number = serializers.CharField(max_length=15)
+    coupon = serializers.CharField(max_length=20, required=False, allow_blank=True)
+
 
 class PaymentVerificationSerializer(serializers.Serializer):
     razorpay_order_id = serializers.CharField(max_length=255)
