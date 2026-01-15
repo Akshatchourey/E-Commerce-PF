@@ -5,6 +5,8 @@ from .models import Order
 from .serializers import OrderSerializer
 from .models import Product, Offer, CartItem, Wishlist
 from .decorators import allowed_users
+from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer,TransferToWishlistSerializer
+
 from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
     OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, \
     AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer, \
