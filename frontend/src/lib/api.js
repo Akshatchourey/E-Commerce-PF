@@ -1,7 +1,7 @@
 //functions in this page: getAuthHeader, refreshToken, fetchProducts, authenticatedFetch, addToCart, fetchCartCount,
 
 
-const API_BASE = "http://127.0.0.1:8000";
+export const API_BASE = "http://127.0.0.1:8000";
 
 function getAuthHeaders() {
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
@@ -49,7 +49,7 @@ async function refreshToken() {
 }
 
 
-async function authenticatedFetch(url, options = {}) {
+export async function authenticatedFetch(url, options = {}) {
   let res = await fetch(url, {
     ...options,
     headers: { ...getAuthHeaders(), ...options.headers },

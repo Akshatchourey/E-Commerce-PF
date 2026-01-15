@@ -16,7 +16,7 @@ from .models import Product, Order, OrderItem, CartItem, Offer
 from .serializers import OrderCreationSerializer, PaymentVerificationSerializer
 
 # Initialize Razorpay Client
-razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_API_KEY, settings.RAZORPAY_API_SECRET))
+razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
 
 
 class CreateRazorpayOrderView(APIView):
@@ -30,6 +30,7 @@ class CreateRazorpayOrderView(APIView):
         user = request.user
         items_data = data['items']
         coupon_code = data.get('coupon')
+        gift_wrap_requested = data.get('gift_wrap', False)
 
         subtotal = Decimal('0.00')
         order_items_to_prepare = []
@@ -67,6 +68,9 @@ class CreateRazorpayOrderView(APIView):
 
         total_final_amount = subtotal - discount
 
+        if gift_wrap_requested:
+            total_final_amount += Decimal('10.00')
+
         # 3. Create Order in local DB and Razorpay
         try:
             with transaction.atomic():
@@ -75,6 +79,7 @@ class CreateRazorpayOrderView(APIView):
                     total_amount=total_final_amount,
                     shipping_address=data['shipping_address'],
                     phone_number=data['phone_number'],
+                    gift_wrap=gift_wrap_requested,
                     status="PENDING",
                     payment_provider="RAZORPAY"
                 )

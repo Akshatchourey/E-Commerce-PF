@@ -87,6 +87,7 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING", db_index=True)
+    gift_wrap = models.BooleanField(default=False)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     # Razorpay Specific Fields

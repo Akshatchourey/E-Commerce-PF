@@ -8,28 +8,26 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import Navbar from "@/components/navbar/navbar";
+import { API_BASE, authenticatedFetch } from "@/lib/api";
+
 export default function CartPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [giftWrap, setGiftWrap] = useState(false);
+
   useEffect(() => {
     fetchCartItems();
   }, []);
 
+  // 1. Using the sync-cart-wishlist endpoint and authenticatedFetch
   const fetchCartItems = async () => {
     setLoading(true);
     try {
-      const response = await fetch('/api/cart/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        }
-      });
-      
-
+      const response = await authenticatedFetch(`${API_BASE}/api/sync-cart-wishlist/`);
       if (response.ok) {
         const data = await response.json();
-        setCartItems(data);
+        // sync-cart-wishlist returns { cart: [], wishlist: [] }
+        setCartItems(data.cart || []);
       } else {
         console.error('Failed to fetch cart items');
       }
@@ -40,16 +38,13 @@ export default function CartPage() {
     }
   };
 
+  // 2. Using PATCH method as required by manage_cart view
   const updateQuantity = async (productId, newQuantity) => {
     if (newQuantity < 1) return;
 
     try {
-      const response = await fetch('/api/cart/', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
+      const response = await authenticatedFetch(`${API_BASE}/api/cart/`, {
+        method: 'PATCH',
         body: JSON.stringify({
           product_id: productId,
           quantity: newQuantity
@@ -57,13 +52,13 @@ export default function CartPage() {
       });
 
       if (response.ok) {
-        setCartItems(cartItems.map(item =>
+        setCartItems(prev => prev.map(item =>
           item.product.public_product_id === productId
             ? { ...item, quantity: newQuantity }
             : item
         ));
-      } else {
-        console.error('Failed to update quantity');
+        // Notify Navbar to update cart count
+        window.dispatchEvent(new Event("cartUpdated"));
       }
     } catch (error) {
       console.error('Error updating quantity:', error);
@@ -72,28 +67,25 @@ export default function CartPage() {
 
   const removeFromCart = async (productId) => {
     try {
-      const response = await fetch('/api/cart/', {
+      const response = await authenticatedFetch(`${API_BASE}/api/cart/`, {
         method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
         body: JSON.stringify({
           product_id: productId
         })
       });
 
       if (response.ok) {
-        setCartItems(cartItems.filter(
+        setCartItems(prev => prev.filter(
           item => item.product.public_product_id !== productId
         ));
-      } else {
-        console.error('Failed to remove item');
+        // Notify Navbar to update cart count
+        window.dispatchEvent(new Event("cartUpdated"));
       }
     } catch (error) {
       console.error('Error removing item:', error);
     }
   };
+
   const subtotal = cartItems.reduce((sum, item) =>
     sum + (parseFloat(item.product.price) * item.quantity), 0
   );
@@ -102,8 +94,11 @@ export default function CartPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p className="text-xl">Loading cart</p>
+      <div className="min-h-screen flex items-center justify-center bg-amber-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-xl font-serif">Loading your cart...</p>
+        </div>
       </div>
     );
   }
@@ -141,34 +136,27 @@ export default function CartPage() {
                       key={item.product.public_product_id}
                       className="flex gap-6 pb-6 border-b mb-6 last:border-b-0"
                     >
-                      <div className="w-32 h-32 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 shrink-0 shadow-md overflow-hidden">
+                      <div className="relative w-32 h-32 rounded-lg bg-stone-100 shrink-0 shadow-sm overflow-hidden border">
                         {item.product.image ? (
-                          <Image
+                          <img
                             src={item.product.image}
                             alt={item.product.title}
-                            className="w-full h-full object-cover"
+                            className="h-[220px] w-full object-cover rounded-[6px]"
+                            loading="lazy"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center">
-                            <div className="w-20 h-24 bg-amber-300/50 rounded-md"></div>
+                          <div className="w-full h-full flex items-center justify-center bg-amber-50">
+                            <ShoppingBag className="text-amber-200 w-12 h-12" />
                           </div>
                         )}
                       </div>
                       <div className="flex-1 flex flex-col justify-between">
                         <div>
-                          <h4 className="font-semibold text-lg mb-1">
-                            {item.product.title}
-                          </h4>
-                          <p className="text-sm text-gray-600 mb-1">
-                            Seller: {item.product.seller}
-                          </p>
-                          {item.product.category && (
-                            <p className="text-sm text-gray-500 mb-3">
-                              Category: {item.product.category}
-                            </p>
-                          )}
+                          <h4 className="font-semibold text-lg mb-1">{item.product.title}</h4>
+                          <p className="text-sm text-gray-600 mb-1">Seller: {item.product.seller}</p>
+                          <p className="text-sm text-gray-500 mb-3">Category: {item.product.category}</p>
                           <p className="text-2xl font-bold text-gray-900">
-                            ${parseFloat(item.product.price).toFixed(2)}
+                            ₹{parseFloat(item.product.price).toFixed(2)}
                           </p>
                         </div>
                         <div className="flex items-center justify-between mt-4">
@@ -177,24 +165,16 @@ export default function CartPage() {
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 hover:bg-white"
-                              onClick={() => updateQuantity(
-                                item.product.public_product_id,
-                                item.quantity - 1
-                              )}
+                              onClick={() => updateQuantity(item.product.public_product_id, item.quantity - 1)}
                             >
                               <Minus className="w-4 h-4" />
                             </Button>
-                            <span className="w-8 text-center font-semibold">
-                              {item.quantity}
-                            </span>
+                            <span className="w-8 text-center font-semibold">{item.quantity}</span>
                             <Button
                               size="sm"
                               variant="ghost"
                               className="h-8 w-8 hover:bg-white"
-                              onClick={() => updateQuantity(
-                                item.product.public_product_id,
-                                item.quantity + 1
-                              )}
+                              onClick={() => updateQuantity(item.product.public_product_id, item.quantity + 1)}
                             >
                               <Plus className="w-4 h-4" />
                             </Button>
@@ -213,7 +193,7 @@ export default function CartPage() {
                       </div>
                     </div>
                   ))}
-                  <Link href="/shop">
+                  <Link href="/shoppage">
                     <Button variant="outline" className="mt-6 w-full sm:w-auto">
                       Continue Shopping
                     </Button>
@@ -222,6 +202,7 @@ export default function CartPage() {
               )}
             </Card>
           </div>
+
           <div className="lg:col-span-2">
             <Card className="p-6 shadow-lg border-0 bg-white sticky top-24">
               <h3 className="text-xl font-semibold mb-6">Order Summary</h3>
@@ -229,23 +210,23 @@ export default function CartPage() {
                 <Checkbox
                   id="wrap"
                   checked={giftWrap}
-                  onCheckedChange={(checked) => setGiftWrap(checked)}
+                  onCheckedChange={(checked) => setGiftWrap(!!checked)}
                   className="mt-1"
                 />
                 <label htmlFor="wrap" className="text-sm flex-1 cursor-pointer">
                   <span className="font-medium">Gift Wrap</span>
-                  <p className="text-gray-600 mt-1">Add beautiful gift wrapping for $10.00</p>
+                  <p className="text-gray-600 mt-1">Add beautiful gift wrapping for ₹10.00</p>
                 </label>
               </div>
               <div className="space-y-3 mb-6">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Subtotal</span>
-                  <span className="font-semibold">${subtotal.toFixed(2)}</span>
+                  <span className="font-semibold">₹{subtotal.toFixed(2)}</span>
                 </div>
                 {giftWrap && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Gift Wrap</span>
-                    <span className="font-semibold">${giftWrapCost.toFixed(2)}</span>
+                    <span className="font-semibold">₹{giftWrapCost.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-sm">
@@ -256,54 +237,35 @@ export default function CartPage() {
               <div className="border-t pt-4 mb-6">
                 <div className="flex justify-between items-center">
                   <span className="text-lg font-semibold">Total</span>
-                  <span className="text-2xl font-bold text-gray-900">${total.toFixed(2)}</span>
+                  <span className="text-2xl font-bold text-gray-900">₹{total.toFixed(2)}</span>
                 </div>
               </div>
+
               {cartItems.length > 0 ? (
-                  <Link href="/cartsystem/checkout">
-                    <Button className="...">
-                      Proceed to Checkout
-                    </Button>
-                  </Link>
-                ) : (
-                  <Button
-                    className="w-full mb-3 bg-gray-400 text-white h-12 text-base font-semibold cursor-not-allowed"
-                    disabled
-                  >
+                <Link href="/cartsystem/checkout">
+                  <Button className="w-full bg-black text-white hover:bg-gray-800 h-12 text-lg font-semibold rounded-md">
                     Proceed to Checkout
                   </Button>
-                )}
+                </Link>
+              ) : (
+                <Button
+                  className="w-full bg-gray-300 text-gray-500 h-12 text-lg font-semibold cursor-not-allowed"
+                  disabled
+                >
+                  Proceed to Checkout
+                </Button>
+              )}
 
-              <Link href="/shop">
-                <Button variant="outline" className="w-full">
-                  Continue Shopping
+              <Link href="/shoppage">
+                <Button variant="outline" className="w-full mt-3">
+                  Back to Shop
                 </Button>
               </Link>
             </Card>
           </div>
         </div>
       </div>
-      <section className="bg-gradient-to-r from-amber-600 to-amber-700 text-white py-20">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="text-center mb-8">
-            <Mail className="w-12 h-12 mx-auto mb-4 opacity-90" />
-            <h3 className="text-3xl font-serif mb-3">Stay Updated</h3>
-          </div>
 
-          <div className="max-w-md mx-auto">
-            <div className="flex gap-2">
-              <input
-                type="email"
-                className="flex-1 px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-white"
-                placeholder="your@email.com"
-              />
-              <Button className="bg-white text-amber-700 hover:bg-amber-50 px-8 font-semibold">
-                Subscribe
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-8 mb-8">

@@ -244,6 +244,7 @@ class OrderCreationSerializer(serializers.Serializer):
     shipping_address = serializers.CharField(max_length=255)
     phone_number = serializers.CharField(max_length=15)
     coupon = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    gift_wrap = serializers.BooleanField(default=False)
 
 
 class PaymentVerificationSerializer(serializers.Serializer):

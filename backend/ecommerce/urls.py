@@ -24,6 +24,6 @@ urlpatterns = [
     # Razorpay payment urls
     path('api/create-order/', views2.CreateRazorpayOrderView.as_view(), name='create-razorpay-order'),
     path('api/verify-payment/', views2.VerifyRazorpayPaymentView.as_view(), name='verify-razorpay-payment'),
-    # path('webhook/razorpay/', views2.RazorpayWebhookView.as_view(), name='razorpay-webhook'),
+    path('webhook/razorpay/', views2.RazorpayWebhookView.as_view(), name='razorpay-webhook'),
 
 ]
