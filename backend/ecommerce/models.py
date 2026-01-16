@@ -70,7 +70,7 @@ class CartItem(models.Model):
         unique_together = ("user", "product")
 
     def __str__(self):
-        return f"{self.product.title} x {self.quantity}"
+        return f"{self.user.username} x {self.product.title} x {self.quantity}"
 
 class Order(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -87,6 +87,7 @@ class Order(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="orders")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="PENDING", db_index=True)
+    gift_wrap = models.BooleanField(default=False)
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
 
     # Razorpay Specific Fields
