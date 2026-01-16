@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-
+import Image from "next/image";
 export default function Login() {
   const router = useRouter();
 
@@ -60,38 +60,46 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F5F5F5]">
-      <div className="bg-[#8B735E] p-6">
-        <div className="flex w-[900px] h-[460px]">
-          <div className="w-1/2 bg-[#8B735E] flex items-center justify-center" />
-          <div className="w-1/2 bg-[#E6C9A0] px-14 py-12 flex flex-col justify-between">
-            <form onSubmit={handleLogin}>
-              <div>
-                <h1 className="text-2xl font-serif text-[#3A2E25] mb-4">
+  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9EF] via-[#FFF9EF] to-[#F5EFDE] p-4">
+      <div className="shadow-2xl rounded-xl overflow-hidden">
+        <div className="flex w-full max-w-4xl bg-white" style={{ width: '900px', height: '600px' }}>
+          {/* Image Section */}
+          <div className="w-1/2 bg-gradient-to-br from-[#8B735E] to-[#A0866F] flex items-center justify-center p-8">
+            <div className="text-center">
+              <Image 
+                src="/jute-bag.png" 
+                alt="Crafted Roots - Handcrafted products showcasing quality and tradition" 
+                className="w-full h-auto max-w-sm mx-auto rounded-lg shadow-lg"
+              />
+              <p className="text-white/70 text-sm mt-6 font-light">
+                Crafted with care, Rooted in quality
+              </p>
+            </div>
+          </div>
+
+          {/* Form Section */}
+          <div className="w-1/2 bg-gradient-to-b from-[#FFF9EF] to-[#F5EFDE] px-12 py-10 flex flex-col justify-center">
+            <div className="space-y-8">
+              {/* Header */}
+              <div className="text-center">
+                <h1 className="text-3xl font-serif text-[#3A2E25] mb-2">
                   Crafted Roots
                 </h1>
-
-                <p className="text-sm text-[#3A2E25] mb-5">
-                  Sign In To Crafted Roots
+                <p className="text-sm text-[#8B7355] font-light">
+                  Welcome Back to Your Roots
                 </p>
+              </div>
 
-                {error && <p className="text-red-600 text-xs mb-4">{error}</p>}
-
-                <div className="flex gap-3 mb-5">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="flex-1 border border-[#3A2E25] bg-white py-1.5 text-xs rounded text-black hover:bg-white/90 h-auto"
-                  >
-                    Sign in with Google
-                  </Button>
+              {/* Error Message */}
+              {error && (
+                <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+                  {error}
                 </div>
+              )}
 
-                <div className="text-center text-xs text-[#3A2E25] mb-6">
-                  — OR —
-                </div>
-
-                <div className="space-y-4">
+              {/* Input Fields */}
+              <div className="space-y-6">
+                <div className="relative">
                   <Input
                     name="username"
                     type="text"
@@ -99,9 +107,11 @@ export default function Login() {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className="w-full bg-transparent border-0 border-b border-[#3A2E25] px-1 py-1 text-sm rounded-none placeholder-[#5A4A3C] text-black focus-visible:ring-0 focus-visible:border-[#3A2E25]"
+                    className="w-full bg-transparent border-0 border-b-2 border-[#D4C5B0] px-0 py-3 text-sm rounded-none placeholder-[#C4B5A0] text-[#3A2E25] focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#8B735E] transition-colors duration-200"
                   />
+                </div>
 
+                <div className="relative">
                   <Input
                     name="password"
                     type="password"
@@ -109,39 +119,76 @@ export default function Login() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full bg-transparent border-0 border-b border-[#3A2E25] px-1 py-1 text-sm rounded-none placeholder-[#5A4A3C] text-black focus-visible:ring-0 focus-visible:border-[#3A2E25]"
+                    className="w-full bg-transparent border-0 border-b-2 border-[#D4C5B0] px-0 py-3 text-sm rounded-none placeholder-[#C4B5A0] text-[#3A2E25] focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#8B735E] transition-colors duration-200"
                   />
                 </div>
               </div>
 
-              <div>
+              {/* Buttons */}
+              <div className="space-y-4">
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-black text-white hover:bg-black/90 py-2 rounded mt-6 text-sm h-auto"
+                  className="w-full bg-gradient-to-r from-[#8B735E] to-[#7B6350] text-white hover:from-[#7B6350] hover:to-[#6B5340] disabled:from-[#8B735E]/50 disabled:to-[#7B6350]/50 disabled:cursor-not-allowed py-3 px-4 rounded-lg font-semibold text-base h-auto transition-all duration-300 shadow-md hover:shadow-lg"
                 >
-                  {loading ? "Signing In..." : "Sign In"}
+                  {loading ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                      </svg>
+                      Signing In...
+                    </span>
+                  ) : (
+                    "Sign In"
+                  )}
                 </Button>
 
-                <Link href="/sign-in/signup">
+                {/* Divider */}
+                <div className="flex items-center gap-3 py-2">
+                  <div className="flex-1 border-t border-[#D4C5B0]" />
+                  <span className="text-xs text-[#8B7355] font-light">OR</span>
+                  <div className="flex-1 border-t border-[#D4C5B0]" />
+                </div>
+
+                {/* Google Sign In */}
+                <Button
+                  type="button"
+                  className="w-full border-2 border-[#D4C5B0] bg-white text-[#3A2E25] py-3 text-sm rounded-lg hover:bg-[#FFF9EF] hover:border-[#8B735E] font-medium h-auto transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
+                >
+                  Sign in with Google
+                </Button>
+
+                {/* Create Account */}
+                <Link href="/sign-in/signup" className="block">
                   <Button
                     type="button"
-                    variant="outline"
-                    className="w-full border border-[#3A2E25] text-[#3A2E25] hover:bg-[#3A2E25]/5 py-2 rounded mt-3 text-xs h-auto"
+                    className="w-full border-2 border-[#D4C5B0] bg-white text-[#8B735E] hover:bg-[#FFF9EF] hover:border-[#8B735E] py-3 rounded-lg text-sm h-auto font-medium transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                   >
-                    Sign Up
+                    Create New Account
                   </Button>
                 </Link>
+              </div>
 
-                <p className="text-[10px] text-right mt-3 text-[#3A2E25] underline cursor-pointer hover:text-[#3A2E25]/70">
-                  Forget Password?
-                </p>
+              {/* Footer Links */}
+              <div className="border-t border-[#E5DDD0] pt-4 space-y-3">
+                <div>
+                  <button
+                    type="button"
+                    className="text-xs text-[#8B7355] hover:text-[#8B735E] font-medium transition duration-200 underline underline-offset-2"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
 
-                <p className="text-[9px] text-right mt-4 text-[#3A2E25]">
-                  Terms & Conditions
+                <p className="text-xs text-center text-[#8B7355] leading-relaxed">
+                  By signing in, you agree to our{" "}
+                  <button type="button" className="font-medium text-[#8B735E] hover:underline">
+                    Terms & Conditions
+                  </button>
                 </p>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       </div>
