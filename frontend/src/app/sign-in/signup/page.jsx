@@ -73,11 +73,10 @@ export default function Signup() {
  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9EF] via-[#FFF9EF] to-[#F5EFDE] p-4">
       <div className="shadow-2xl rounded-xl overflow-hidden">
         <div className="flex w-full max-w-4xl bg-white" style={{ width: '900px', height: '600px' }}>
-          {/* Image Section */}
           <div className="w-1/2 bg-gradient-to-br from-[#8B735E] to-[#A0866F] flex items-center justify-center p-8">
             <div className="text-center">
               <Image 
-                src="/jute-bag.png" 
+                src="/logo.png" 
                 alt="Crafted Roots - Handcrafted products showcasing quality and tradition" 
                 width={280}
                 height={280}
@@ -88,11 +87,8 @@ export default function Signup() {
               </p>
             </div>
           </div>
-
-          {/* Form Section */}
           <div className="w-1/2 bg-gradient-to-b from-[#FFF9EF] to-[#F5EFDE] px-12 py-10 flex flex-col justify-center">
             <div className="space-y-4">
-              {/* Header */}
               <div className="text-center">
                 <h1 className="text-3xl font-serif text-[#3A2E25] mb-2">
                   Crafted Roots
@@ -101,15 +97,11 @@ export default function Signup() {
                   Create Your Account
                 </p>
               </div>
-
-              {/* Error Message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
-
-              {/* Google Sign Up */}
               <div className="space-y-2">
                 <Button
                   type="button"
@@ -117,16 +109,12 @@ export default function Signup() {
                 >
                   Sign up with Google
                 </Button>
-
-                {/* Divider */}
                 <div className="flex items-center gap-2 py-2">
                   <div className="flex-1 border-t border-[#D4C5B0]" />
                   <span className="text-xs text-[#8B7355] font-light">OR</span>
                   <div className="flex-1 border-t border-[#D4C5B0]" />
                 </div>
               </div>
-
-              {/* Input Fields */}
               <div className="space-y-2">
                 <div className="relative">
                   <Input
@@ -176,8 +164,6 @@ export default function Signup() {
                   />
                 </div>
               </div>
-
-              {/* Create Account Button */}
               <div className="space-y-4 pt-2">
                 <Button
                   type="button"
@@ -198,7 +184,7 @@ export default function Signup() {
                   )}
                 </Button>
 
-                {/* Footer Links */}
+                
                 <div className="border-t border-[#E5DDD0] pt-4 space-y-3">
                   <div className="text-center">
                     <Link href="/sign-in/login" className="text-xs text-[#8B7355] hover:text-[#8B735E] font-medium transition duration-200">

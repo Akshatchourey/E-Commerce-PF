@@ -63,13 +63,12 @@ export default function Login() {
   <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9EF] via-[#FFF9EF] to-[#F5EFDE] p-4">
       <div className="shadow-2xl rounded-xl overflow-hidden">
         <div className="flex w-full max-w-4xl bg-white" style={{ width: '900px', height: '600px' }}>
-          {/* Image Section */}
           <div className="w-1/2 bg-gradient-to-br from-[#8B735E] to-[#A0866F] flex items-center justify-center p-8">
             <div className="text-center">
               <Image 
-                src="/jute-bag.png" 
+                src="/logo.png" 
                 alt="Crafted Roots - Handcrafted products showcasing quality and tradition" 
-                className="w-full h-auto max-w-sm mx-auto rounded-lg shadow-lg"
+                className="w-full h-auto max-w-[280px] mx-auto rounded-lg shadow-lg"
               />
               <p className="text-white/70 text-sm mt-6 font-light">
                 Crafted with care, Rooted in quality
@@ -77,10 +76,8 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Form Section */}
           <div className="w-1/2 bg-gradient-to-b from-[#FFF9EF] to-[#F5EFDE] px-12 py-10 flex flex-col justify-center">
             <div className="space-y-8">
-              {/* Header */}
               <div className="text-center">
                 <h1 className="text-3xl font-serif text-[#3A2E25] mb-2">
                   Crafted Roots
@@ -89,15 +86,11 @@ export default function Login() {
                   Welcome Back to Your Roots
                 </p>
               </div>
-
-              {/* Error Message */}
               {error && (
                 <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
                   {error}
                 </div>
               )}
-
-              {/* Input Fields */}
               <div className="space-y-6">
                 <div className="relative">
                   <Input
@@ -123,8 +116,6 @@ export default function Login() {
                   />
                 </div>
               </div>
-
-              {/* Buttons */}
               <div className="space-y-4">
                 <Button
                   type="submit"
@@ -143,23 +134,17 @@ export default function Login() {
                     "Sign In"
                   )}
                 </Button>
-
-                {/* Divider */}
                 <div className="flex items-center gap-3 py-2">
                   <div className="flex-1 border-t border-[#D4C5B0]" />
                   <span className="text-xs text-[#8B7355] font-light">OR</span>
                   <div className="flex-1 border-t border-[#D4C5B0]" />
                 </div>
-
-                {/* Google Sign In */}
                 <Button
                   type="button"
                   className="w-full border-2 border-[#D4C5B0] bg-white text-[#3A2E25] py-3 text-sm rounded-lg hover:bg-[#FFF9EF] hover:border-[#8B735E] font-medium h-auto transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
                 >
                   Sign in with Google
                 </Button>
-
-                {/* Create Account */}
                 <Link href="/sign-in/signup" className="block">
                   <Button
                     type="button"
@@ -169,8 +154,6 @@ export default function Login() {
                   </Button>
                 </Link>
               </div>
-
-              {/* Footer Links */}
               <div className="border-t border-[#E5DDD0] pt-4 space-y-3">
                 <div>
                   <button
