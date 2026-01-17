@@ -103,3 +103,99 @@ export async function fetchCartCount() {
   }
   return 0;
 }
+
+export async function fetchUserOrders() {
+  const res = await authenticatedFetch(`${API_BASE}/api/user-orders/`);
+  if (!res.ok) return { count: 0, orders: [] };
+  return res.json();
+}
+
+export async function syncCartWishlist() {
+  const res = await authenticatedFetch(`${API_BASE}/api/sync-cart-wishlist/`);
+  if (!res.ok) return { cart: [], wishlist: [] };
+  return res.json();
+}
+
+// Seller APIs (assumed endpoints; adjust to backend routes if different)
+export async function fetchSellerSummary() {
+  try {
+    const res = await authenticatedFetch(`${API_BASE}/api/seller/summary/`);
+    if (!res.ok) return { products: 0, orders_today: 0, revenue: 0 };
+    return res.json();
+  } catch {
+    return { products: 0, orders_today: 0, revenue: 0 };
+  }
+}
+
+export async function fetchSellerProducts(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${query ? `?${query}` : ""}`);
+  if (!res.ok) return { results: [], next: null, previous: null };
+  return res.json();
+}
+
+export async function createSellerProduct(payload) {
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await safeJson(res);
+    throw new Error(err?.detail || err?.error || "Failed to create product");
+  }
+  return res.json();
+}
+
+export async function fetchSellerProduct(id) {
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${id}/`);
+  if (!res.ok) {
+    return null;
+  }
+  return res.json();
+}
+
+export async function updateSellerProduct(id, payload) {
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    const err = await safeJson(res);
+    throw new Error(err?.detail || err?.error || "Failed to update product");
+  }
+  return res.json();
+}
+
+export async function deleteSellerProduct(id) {
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${id}/`, {
+    method: "DELETE",
+  });
+  return res.ok;
+}
+
+export async function fetchSellerOrders(params = {}) {
+  const query = new URLSearchParams(params).toString();
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/orders/${query ? `?${query}` : ""}`);
+  if (!res.ok) return { results: [], next: null, previous: null };
+  return res.json();
+}
+
+export async function updateOrderStatus(id, status) {
+  const res = await authenticatedFetch(`${API_BASE}/api/seller/orders/${id}/`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+  if (!res.ok) {
+    const err = await safeJson(res);
+    throw new Error(err?.detail || err?.error || "Failed to update order");
+  }
+  return res.json();
+}
+
+async function safeJson(res) {
+  try {
+    return await res.json();
+  } catch {
+    return null;
+  }
+}

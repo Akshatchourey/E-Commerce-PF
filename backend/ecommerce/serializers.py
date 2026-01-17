@@ -251,3 +251,27 @@ class PaymentVerificationSerializer(serializers.Serializer):
     razorpay_order_id = serializers.CharField(max_length=255)
     razorpay_payment_id = serializers.CharField(max_length=255)
     razorpay_signature = serializers.CharField(max_length=255)
+
+from rest_framework import serializers
+from .models import ContactMessage
+
+
+class ContactMessageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ContactMessage
+        fields = [
+            "id",
+            "name",
+            "email",
+            "phone",
+            "subject",
+            "message",
+        ]
+
+    def validate_message(self, value):
+        if len(value.strip()) < 10:
+            raise serializers.ValidationError(
+                "Message must be at least 10 characters."
+            )
+        return value
+
