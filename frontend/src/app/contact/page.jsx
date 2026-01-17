@@ -36,28 +36,47 @@ export default function ContactPage() {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    
-    // Validate form
-    if (!formData.name || !formData.email || !formData.message) {
-      alert('Please fill in all required fields');
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  if (!formData.name || !formData.email || !formData.message) {
+    alert("Please fill in all required fields");
+    return;
+  }
+
+  try {
+    const response = await fetch("http://127.0.0.1:8000/api/contact/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(formData),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      console.error(data);
+      alert("Something went wrong");
       return;
     }
 
-    // Just log for now
-    console.log('Contact form data:', formData);
-    alert('Thank you for contacting us! We will get back to you soon.');
-    
-    // Reset form
+    alert("Thank you for contacting us! We will get back to you soon.");
+
     setFormData({
       name: "",
       email: "",
       phone: "",
       subject: "",
-      message: ""
+      message: "",
     });
-  };
+
+  } catch (error) {
+    console.error(error);
+    alert("Server error. Please try again later.");
+  }
+};
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-amber-50 via-stone-50 to-amber-50">

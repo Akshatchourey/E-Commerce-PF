@@ -79,6 +79,7 @@ class Order(models.Model):
     STATUS_CHOICES = (
         ("PENDING", "Pending"),
         ("PAID", "Paid"),
+        ("VERIFIED", "Verified"),
         ("FAILED", "Failed"),
         ("CANCELLED", "Cancelled"),
         ("SHIPPED", "Shipped"),
@@ -147,3 +148,42 @@ class Offer(models.Model):
 
     def __str__(self):
         return self.coupon
+
+class ContactMessage(models.Model):
+    SUBJECT_CHOICES = (
+        ("general", "General Inquiry"),
+        ("order", "Order Support"),
+        ("product", "Product Question"),
+        ("wholesale", "Wholesale / Partnership"),
+        ("feedback", "Feedback"),
+        ("other", "Other"),
+    )
+
+    name = models.CharField(max_length=100)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True, null=True)
+
+    subject = models.CharField(
+        max_length=30,
+        choices=SUBJECT_CHOICES,
+        blank=True,
+        null=True
+    )
+
+    message = models.TextField()
+
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
+
+    is_resolved = models.BooleanField(default=False)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [
+            models.Index(fields=["email"]),
+            models.Index(fields=["created_at"]),
+        ]
+
+    def __str__(self):
+        return f"{self.name} - {self.email}"

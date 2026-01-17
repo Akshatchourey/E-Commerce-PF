@@ -3,17 +3,18 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
 from .models import Order
 from .serializers import OrderSerializer
-from .models import Product, Offer, CartItem, Wishlist
+from .models import Product, Offer, CartItem, Wishlist,ContactMessage
 from .decorators import allowed_users
 from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
     OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, \
     AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer, \
-    TransferToWishlistSerializer
+    TransferToWishlistSerializer,ContactMessageSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
-
+from rest_framework import status
+from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 
 # Create your views here.
@@ -330,3 +331,26 @@ def transfer_to_wishlist(request):
         return Response({"message": "Item transferred from cart to wishlist"})
     else:
         return Response({"message": "Item already in wishlist"})
+    
+
+
+class ContactMessageCreateView(APIView):
+    permission_classes = []  # public endpoint
+
+    def post(self, request):
+        serializer = ContactMessageSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(
+                ip_address=self.get_client_ip(request)
+            )
+            return Response(
+                {"message": "Message sent successfully"},
+                status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_client_ip(self, request):
+        xff = request.META.get("HTTP_X_FORWARDED_FOR")
+        if xff:
+            return xff.split(",")[0]
+        return request.META.get("REMOTE_ADDR")
