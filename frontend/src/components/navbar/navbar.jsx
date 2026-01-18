@@ -24,6 +24,7 @@ export default function Navbar() {
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const router = useRouter();
+  const [profilePath, setProfilePath] = useState("/profile");
 
   const updateCart = async () => {
     const count = await fetchCartCount();
@@ -41,6 +42,12 @@ export default function Navbar() {
     if (token) {
       updateCart();
       updateWishlist();
+    }
+    const role = typeof window !== "undefined" ? localStorage.getItem("role") : null;
+    if (role === "seller") {
+      setProfilePath("/seller-dashboard");
+    } else {
+      setProfilePath("/profile");
     }
 
     const handleCartUpdate = () => updateCart();
@@ -98,26 +105,22 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
-          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/homepage")}>
-            <Image
-              src="/logo.png"
-              alt="Crafted Roots - Handcrafted products showcasing quality and tradition"
-              width={80}
-              height={5}
-              className="object-contain"
-            />
+          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/")}>
+            <div className="text-2xl font-bold text-primary leading-none">
+              Crafted Roots
+              </div>
           </div>
 
-          <NavigationMenu>
+          <NavigationMenu href="/shoppage">
             <NavigationMenuList>
               <NavigationMenuItem>
-                <NavigationMenuTrigger className={"bg-[#FFF9EF]"}>Categories</NavigationMenuTrigger>
+                <NavigationMenuTrigger className={"bg-[#FFF9EF]"}>Shop</NavigationMenuTrigger>
                 <NavigationMenuContent>
                   <ul className="grid w-[min(90vw,500px)] gap-3 p-4 sm:grid-cols-1 md:grid-cols-2 md:gap-4 bg-[#FFF9EF]">
-                    <ListItem title="Wall Hangings" href="/shoppage?category=Decor">
+                    <ListItem title="Wall Hangings" href="/shoppage">
                       Handcrafted wall decor
                     </ListItem>
-                    <ListItem title="Bags" href="/shoppage?category=Bags">
+                    <ListItem title="Bags" href="/shoppage">
                       Jute and Leather bags
                     </ListItem>
                     <ListItem title="Accessories" href="/shoppage?category=Accessories">
@@ -194,15 +197,13 @@ export default function Navbar() {
             </Button>
 
             <div className="w-px h-6 bg-gray-300 mx-1"></div>
-
             {isLoggedIn ? (
-              <>
-                <Link href="/profile">
-                    <Button variant="ghost" size="icon" title="My Profile">
-                        <User className="h-5 w-5" />
-                    </Button>
-                </Link>
-
+                  <>
+                    <Link href={profilePath}>
+                        <Button variant="ghost" size="icon" title="My Profile">
+                            <User className="h-5 w-5" />
+                        </Button>
+                    </Link>
                 <Button
                     variant="ghost"
                     size="icon"
