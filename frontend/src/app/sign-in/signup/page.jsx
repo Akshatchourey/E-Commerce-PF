@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
+import { API_BASE, authenticatedFetch } from "@/lib/api";
 
 export default function Signup() {
   const router = useRouter();
@@ -40,7 +41,7 @@ export default function Signup() {
 
     try {
       // The backend RegisterSerializer expects: username, email, password
-      const response = await fetch("http://127.0.0.1:8000/api/register/", {
+      const response = await fetch(`${API_BASE}/api/register/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
