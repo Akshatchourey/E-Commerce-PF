@@ -104,11 +104,8 @@ export default function Navbar() {
     <nav className="w-full border-b bg-[#FFF9EF] sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
-
-          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/")}>
-            <div className="text-2xl font-bold text-primary leading-none">
-              Crafted Roots
-              </div>
+          <div className="shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push("/homepage")}>
+            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">Crafted Roots</span>
           </div>
 
           <NavigationMenu href="/shoppage">

@@ -76,7 +76,9 @@ export default function ProductCard({ product }) {
   };
 
   return (
-    <div className="bg-white p-[14px] rounded-[8px] cursor-pointer hover:shadow-lg transition-shadow border border-gray-100">
+    <div 
+      onClick={() => router.push(`/product/${product.public_product_id}`)}
+      className="bg-white p-[14px] rounded-[8px] cursor-pointer hover:shadow-lg transition-shadow border border-gray-100">
       <div className="relative h-[220px] w-full">
         <img
         src={product.image}
