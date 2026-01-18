@@ -98,14 +98,8 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
-          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/homepage")}>
-            <Image
-              src="/logo.png"
-              alt="Crafted Roots - Handcrafted products showcasing quality and tradition"
-              width={80}
-              height={5}
-              className="object-contain"
-            />
+          <div className="shrink-0 flex items-center cursor-pointer hover:opacity-80 transition-opacity" onClick={() => router.push("/homepage")}>
+            <span className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-500 to-amber-600">Crafted Roots</span>
           </div>
 
           <NavigationMenu>

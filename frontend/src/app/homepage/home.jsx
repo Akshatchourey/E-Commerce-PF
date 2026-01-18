@@ -342,7 +342,7 @@ export default function CraftedRootsHomepage() {
 
       {/* Floating Action Buttons */}
       <div className="fixed bottom-8 right-8 flex flex-col gap-3 z-40">
-        <button className="bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition-colors">
+        <button onClick={() => router.push('/shoppage')} className="bg-black text-white p-3 rounded-full shadow-lg hover:bg-gray-800 transition-colors">
           <ShoppingCart className="w-6 h-6" />
         </button>
         <button

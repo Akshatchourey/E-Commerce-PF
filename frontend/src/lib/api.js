@@ -21,6 +21,15 @@ export async function fetchProducts(params = {}) {
   return res.json();
 }
 
+// fetch single product by ID
+export async function fetchProductById(productId) {
+  const res = await fetch(`${API_BASE}/api/product/${productId}/`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return res.json();
+}
+
 async function refreshToken() {
   const refresh = localStorage.getItem("refresh_token");
   if (!refresh) return null;
