@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { fetchCartCount } from "@/lib/api"; // Import the helper
+import { fetchCartCount, fetchWishlistCount } from "@/lib/api"; // Import the helper
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -21,6 +21,7 @@ export default function Navbar() {
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [cartCount, setCartCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
   const router = useRouter();
 
   const updateCart = async () => {
@@ -28,17 +29,38 @@ export default function Navbar() {
     setCartCount(count);
   };
 
+  const updateWishlist = async () => {
+    const count = await fetchWishlistCount();
+    setWishlistCount(count);
+  };
+
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     setIsLoggedIn(!!token);
     if (token) {
       updateCart();
+      updateWishlist();
     }
 
     const handleCartUpdate = () => updateCart();
+    const handleWishlistUpdate = (event) => {
+      // Optimistically update count based on event detail
+      if (event.detail && event.detail.action) {
+        setWishlistCount(prev => 
+          event.detail.action === "add" ? prev + 1 : Math.max(0, prev - 1)
+        );
+      } else {
+        // Fallback: fetch full count if detail is not provided
+        updateWishlist();
+      }
+    };
+    
     window.addEventListener("cartUpdated", handleCartUpdate);
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+    
     return () => {
       window.removeEventListener("cartUpdated", handleCartUpdate);
+      window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
     };
   }, []);
 
@@ -65,6 +87,7 @@ export default function Navbar() {
       localStorage.removeItem("username");
       setIsLoggedIn(false);
       setCartCount(0);
+      setWishlistCount(0);
       router.push("/");
     }
   };
@@ -150,12 +173,14 @@ export default function Navbar() {
             <Link href="/wishlist">
               <Button variant="ghost" size="icon" className="relative">
                 <Heart className="h-5 w-5" />
-                <Badge
-                  variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs pointer-events-none"
-                >
-                  0
-                </Badge>
+                {wishlistCount > 0 && (
+                  <Badge
+                    variant="destructive"
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs pointer-events-none"
+                  >
+                    {wishlistCount}
+                  </Badge>
+                )}
               </Button>
             </Link>
 
