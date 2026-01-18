@@ -2,7 +2,7 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
 from .models import Order
-from .serializers import OrderSerializer
+from .serializers import OrderSerializer, SellerOrderSerializer, SellerProductSerializer
 from .models import Product, Offer, CartItem, Wishlist,ContactMessage
 from .decorators import allowed_users
 from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
@@ -16,6 +16,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import BasePermission
+from django.db import models
 
 # Create your views here.
 def home(request):
@@ -354,3 +356,107 @@ class ContactMessageCreateView(APIView):
         if xff:
             return xff.split(",")[0]
         return request.META.get("REMOTE_ADDR")
+    
+
+
+class IsSeller(BasePermission):
+    def has_permission(self, request, view):
+        return (
+            request.user.is_authenticated and
+            request.user.groups.filter(name="seller").exists()
+        )
+class SellerSummaryView(APIView):
+    permission_classes = [IsSeller]
+
+    def get(self, request):
+        seller = request.user
+        products_count = Product.objects.filter(seller=seller).count()
+        orders_count = Order.objects.filter(
+            items__product__seller=seller
+        ).distinct().count()
+
+        revenue = Order.objects.filter(
+            items__product__seller=seller,
+            status__in=["PAID", "DELIVERED"]
+        ).aggregate(models.Sum("total_amount"))["total_amount__sum"] or 0
+
+        return Response({
+            "products": products_count,
+            "orders": orders_count,
+            "revenue": revenue
+        })
+
+class SellerProductListCreateView(APIView):
+    permission_classes = [IsSeller]
+
+    def get(self, request):
+        products = Product.objects.filter(seller=request.user)
+        serializer = SellerProductSerializer(products, many=True)
+        return Response(serializer.data)
+
+    def post(self, request):
+        serializer = SellerProductSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(seller=request.user)
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status=400)
+
+class SellerProductDetailView(APIView):
+    permission_classes = [IsSeller]
+
+    def get_object(self, pk, user):
+        return get_object_or_404(Product, id=pk, seller=user)
+
+    def get(self, request, pk):
+        product = self.get_object(pk, request.user)
+        serializer = SellerProductSerializer(product)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        product = self.get_object(pk, request.user)
+        serializer = SellerProductSerializer(
+            product, data=request.data, partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=400)
+
+    def delete(self, request, pk):
+        product = self.get_object(pk, request.user)
+        product.delete()
+        return Response(status=204)
+
+class SellerOrdersView(APIView):
+    permission_classes = [IsSeller]
+
+    def get(self, request):
+        orders = Order.objects.filter(
+            items__product__seller=request.user
+        ).distinct().order_by("-created_at")
+
+        serializer = SellerOrderSerializer(orders, many=True)
+        return Response(serializer.data)
+class SellerOrderUpdateView(APIView):
+    permission_classes = [IsSeller]
+
+    def patch(self, request, pk):
+        order = get_object_or_404(
+            Order,
+            id=pk,
+            items__product__seller=request.user
+        )
+
+        status_value = request.data.get("status")
+        allowed = ["VERIFIED", "SHIPPED", "DELIVERED"]
+
+        if status_value not in allowed:
+            return Response(
+                {"error": "Invalid status"},
+                status=400
+            )
+
+        order.status = status_value
+        order.save()
+
+        return Response({"status": order.status})

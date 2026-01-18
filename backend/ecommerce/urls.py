@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 from .import views
-from .views import ContactMessageCreateView
+from .views import ContactMessageCreateView, SellerOrderUpdateView, SellerOrdersView, SellerProductDetailView, SellerProductListCreateView, SellerSummaryView 
 from .import views_payment as views2
 
 urlpatterns = [
@@ -28,5 +28,11 @@ urlpatterns = [
     path('webhook/razorpay/', views2.RazorpayWebhookView.as_view(), name='razorpay-webhook'),
     # Contact us urls
     path("api/contact/", ContactMessageCreateView.as_view(), name="contact-create"),
+    # seller apis 
+    path("api/seller/summary/", SellerSummaryView.as_view()),
+    path("api/seller/products/", SellerProductListCreateView.as_view()),
+    path("api/seller/products/<int:pk>/", SellerProductDetailView.as_view()),
+    path("api/seller/orders/", SellerOrdersView.as_view()),
+    path("api/seller/orders/<int:pk>/", SellerOrderUpdateView.as_view()),
 
 ]
