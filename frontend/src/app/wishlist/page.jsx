@@ -5,40 +5,31 @@ import { Card } from "@/components/ui/card";
 import { Heart, Trash2, ShoppingCart, Mail } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import Navbar from "@/components/navbar/navbar";
+import { fetchWishlist, removeFromWishlist, addToCart, invalidateWishlistCache } from "@/lib/api";
 
 export default function WishlistPage() {
   const [wishlistItems, setWishlistItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Invalidate cache to get fresh data
+    invalidateWishlistCache();
     fetchWishlistItems();
+
+    const handleWishlistUpdate = () => {
+      fetchWishlistItems();
+    };
+
+    window.addEventListener("wishlistUpdated", handleWishlistUpdate);
+    return () => window.removeEventListener("wishlistUpdated", handleWishlistUpdate);
   }, []);
 
   const fetchWishlistItems = async () => {
     setLoading(true);
     try {
-      const accessToken = localStorage.getItem('access_token');
-      if (!accessToken) {
-        console.error('No access token found. Please log in.');
-        setLoading(false);
-        return;
-      }
-
-      const response = await fetch('/api/sync-cart-wishlist/', {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setWishlistItems(data.wishlist);
-      } else {
-        console.error('Failed to fetch wishlist items:', response.status, response.statusText);
-      }
+      const items = await fetchWishlist();
+      setWishlistItems(items);
     } catch (error) {
       console.error('Error fetching wishlist:', error);
     } finally {
@@ -46,55 +37,29 @@ export default function WishlistPage() {
     }
   };
 
-  const removeFromWishlist = async (productId) => {
+  const handleRemoveFromWishlist = async (productId) => {
     try {
-      const response = await fetch('/api/wishlist/', {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
-          product_id: productId
-        })
-      });
-
-      if (response.ok) {
-        setWishlistItems(wishlistItems.filter(
-          item => item.product.public_product_id !== productId
-        ));
-      } else {
-        console.error('Failed to remove item');
-      }
+      await removeFromWishlist(productId);
+      setWishlistItems(wishlistItems.filter(
+        item => item.product.public_product_id !== productId
+      ));
     } catch (error) {
       console.error('Error removing item:', error);
+      alert('Failed to remove item from wishlist');
     }
   };
 
-  const addToCart = async (productId) => {
+  const handleAddToCart = async (productId) => {
     try {
-      const response = await fetch('/api/transfer-to-cart/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-        },
-        body: JSON.stringify({
-          product_id: productId,
-          quantity: 1
-        })
-      });
-
-      if (response.ok) {
-        // Remove from wishlist after adding to cart
-        setWishlistItems(wishlistItems.filter(
-          item => item.product.public_product_id !== productId
-        ));
-      } else {
-        console.error('Failed to add to cart');
-      }
+      await addToCart(productId, 1);
+      // Remove from wishlist after adding to cart
+      setWishlistItems(wishlistItems.filter(
+        item => item.product.public_product_id !== productId
+      ));
+      alert('Added to cart! Removed from wishlist.');
     } catch (error) {
       console.error('Error adding to cart:', error);
+      alert('Failed to add to cart');
     }
   };
 
@@ -139,11 +104,9 @@ export default function WishlistPage() {
                 >
                   <div className="w-32 h-32 rounded-lg bg-gradient-to-br from-amber-100 to-amber-200 shrink-0 shadow-md overflow-hidden">
                     {item.product.image ? (
-                      <Image
+                      <img
                         src={item.product.image}
                         alt={item.product.title}
-                        width={128}
-                        height={128}
                         className="w-full h-full object-cover"
                       />
                     ) : (
@@ -166,14 +129,14 @@ export default function WishlistPage() {
                         </p>
                       )}
                       <p className="text-2xl font-bold text-gray-900">
-                        ${parseFloat(item.product.price).toFixed(2)}
+                        ₹{parseFloat(item.product.price).toFixed(2)}
                       </p>
                     </div>
                     <div className="flex items-center gap-3 mt-4">
                       <Button
                         variant="outline"
                         className="flex items-center gap-2"
-                        onClick={() => addToCart(item.product.public_product_id)}
+                        onClick={() => handleAddToCart(item.product.public_product_id)}
                       >
                         <ShoppingCart className="w-4 h-4" />
                         Add to Cart
@@ -183,7 +146,7 @@ export default function WishlistPage() {
                         variant="ghost"
                         size="sm"
                         className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                        onClick={() => removeFromWishlist(item.product.public_product_id)}
+                        onClick={() => handleRemoveFromWishlist(item.product.public_product_id)}
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Remove

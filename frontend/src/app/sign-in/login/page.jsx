@@ -65,9 +65,11 @@ export default function Login() {
         <div className="flex w-full max-w-4xl bg-white" style={{ width: '900px', height: '700px' }}>
           <div className="w-1/2 bg-gradient-to-br from-[#8B735E] to-[#A0866F] flex items-center justify-center p-8">
             <div className="text-center">
-              <Image 
-                src="/logo.png" 
-                alt="Crafted Roots - Handcrafted products showcasing quality and tradition" 
+              <Image
+                src="/logo.png"
+                alt="Crafted Roots - Handcrafted products showcasing quality and tradition"
+                width={280}
+                height={280}
                 className="w-full h-auto max-w-[280px] mx-auto rounded-lg shadow-lg"
               />
               <p className="text-white/70 text-sm mt-6 font-light">
