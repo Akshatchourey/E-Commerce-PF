@@ -275,3 +275,54 @@ class ContactMessageSerializer(serializers.ModelSerializer):
             )
         return value
 
+class SellerProductSerializer(serializers.ModelSerializer):
+    stock = serializers.IntegerField(write_only=True)
+
+    class Meta:
+        model = Product
+        fields = [
+            "id",
+            "public_product_id",
+            "title",
+            "price",
+            "description",
+            "image",
+            "category",
+            "stock",
+            "created_at",
+        ]
+        read_only_fields = ["id", "public_product_id", "created_at"]
+
+    def create(self, validated_data):
+        stock = validated_data.pop("stock")
+        product = Product.objects.create(**validated_data)
+        Inventory.objects.create(product=product, stock_quantity=stock)
+        return product
+
+    def update(self, instance, validated_data):
+        stock = validated_data.pop("stock", None)
+
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        if stock is not None:
+            inventory, _ = Inventory.objects.get_or_create(product=instance)
+            inventory.stock_quantity = stock
+            inventory.save()
+
+        return instance
+
+class SellerOrderSerializer(serializers.ModelSerializer):
+    customer = serializers.CharField(source="user.username")
+
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "public_order_id",
+            "status",
+            "total_amount",
+            "created_at",
+            "customer",
+        ]
