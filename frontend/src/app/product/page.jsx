@@ -1,7 +1,8 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, ShoppingCart, Star, Minus, Plus, Truck, Shield, RotateCcw, Package, Award, Check } from 'lucide-react';
 import Navbar from '@/components/navbar/navbar';
+import { fetchProducts } from '@/lib/api';
 
 export default function CraftedRootsProduct() {
   const [quantity, setQuantity] = useState(1);

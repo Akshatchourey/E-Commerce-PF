@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { fetchCartCount, fetchWishlistCount } from "@/lib/api"; // Import the helper
 import {
   NavigationMenu,
@@ -97,10 +98,14 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 gap-4">
 
-          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/")}>
-            <div className="text-2xl font-bold text-primary leading-none">
-              Crafted Roots
-            </div>
+          <div className="shrink-0 flex items-center cursor-pointer" onClick={() => router.push("/homepage")}>
+            <Image
+              src="/logo.png"
+              alt="Crafted Roots - Handcrafted products showcasing quality and tradition"
+              width={80}
+              height={5}
+              className="object-contain"
+            />
           </div>
 
           <NavigationMenu>

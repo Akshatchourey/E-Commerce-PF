@@ -1,8 +1,15 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { ShoppingCart, ArrowUp, ChevronLeft, ChevronRight, Star, Heart, Bell, User, Search } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import Navbar from '@/components/navbar/navbar';
+import ProductCard from '@/components/ProductCard';
+import { fetchProducts } from '@/lib/api';
+import Image from 'next/image';
+
 export default function CraftedRootsHomepage() {
+  const router = useRouter();
+
   const [timeLeft, setTimeLeft] = useState({
     days: 2,
     hours: 6,
@@ -11,27 +18,16 @@ export default function CraftedRootsHomepage() {
   });
 
   const [currentSlide, setCurrentSlide] = useState(0);
-  
-  const dealProducts = [
-    { id: 1, name: 'Woven Basket' },
-    { id: 2, name: 'Embroidered Pouch' },
-    { id: 3, name: 'Sunflower Art' }
-  ];
-
-  const newArrivals = [
-    { id: 1, name: 'Soy Wax Candles', price: '$24.99', reviews: 156, rating: 5 },
-    { id: 2, name: 'Warli Handpainted Panels', price: '$89.99', reviews: 89, rating: 5 },
-    { id: 3, name: 'Wooden Keychains', price: '$12.99', reviews: 203, rating: 5 },
-    { id: 4, name: 'Handmade Soaps', price: '$18.99', reviews: 142, rating: 5 },
-    { id: 5, name: 'Hand painted Lamps', price: '$54.99', reviews: 78, rating: 5 },
-    { id: 6, name: 'Jute Bags', price: '$34.99', reviews: 167, rating: 5 }
-  ];
+  const [heroProducts, setHeroProducts] = useState([]);
+  const [newArrivals, setNewArrivals] = useState([]);
+  const [dealProducts, setDealProducts] = useState([]);
+  const [loadedImages, setLoadedImages] = useState({});
 
   useEffect(() => {
     const timer = setInterval(() => {
       setTimeLeft(prev => {
         let { days, hours, mins, secs } = prev;
-        
+
         if (secs > 0) {
           secs--;
         } else {
@@ -50,12 +46,35 @@ export default function CraftedRootsHomepage() {
             }
           }
         }
-        
+
         return { days, hours, mins, secs };
       });
     }, 1000);
 
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    fetchProducts({ limit: 20, ordering: '-created_at' })
+      .then(data => {
+        const products = data.results.products || [];
+        
+        if (products.length > 0) {
+          setNewArrivals(products.slice(1, 7));
+          // Set hero products 
+          setHeroProducts([
+            products[4],
+            products[1],
+            products[2],
+            products[3]
+          ]);
+          // Set deal products - select 3-5 random products for slider
+          const shuffled = [...products].sort(() => Math.random() - 0.5);
+          const randomCount = Math.floor(Math.random() * 3) + 3; // 3-5 products
+          setDealProducts(shuffled.slice(0, randomCount));
+        }
+      })
+      .catch(err => console.error("Error fetching products:", err));
   }, []);
 
   const nextSlide = () => {
@@ -70,6 +89,10 @@ export default function CraftedRootsHomepage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const handleImageLoad = (index) => {
+    setLoadedImages(prev => ({...prev, [index]: true}));
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F6]">
      <Navbar/>
@@ -79,22 +102,52 @@ export default function CraftedRootsHomepage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Left Product Image */}
             <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 transform hover:shadow-md transition-all duration-300">
-              <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                <p className="text-gray-500 text-sm">Product Image 1</p>
+              <div className="aspect-square bg-gray-100 flex items-center justify-center relative">
+                {!loadedImages[0] && (
+                  <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+                )}
+                {heroProducts[0]?.image ? (
+                  <img 
+                    src={`${heroProducts[0].image}?w=400&q=60`} 
+                    alt={heroProducts[0].title} 
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                    onLoad={() => handleImageLoad(0)}
+                    style={{filter: loadedImages[0] ? 'none' : 'blur(10px)'}}
+                  />
+                ) : (
+                  <p className="text-gray-500 text-sm">No image</p>
+                )}
               </div>
             </div>
 
             {/* Center Sale Banner */}
             <div className="bg-gray-50 rounded-lg shadow-sm p-8 flex flex-col justify-center items-center text-center border border-gray-200">
               <div className="mb-4 bg-white rounded-lg overflow-hidden shadow-sm border border-gray-200">
-                <div className="h-32 bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                  <p className="text-gray-500 text-xs">Banner Image</p>
+                <div className="h-32 bg-gray-100 flex items-center justify-center relative">
+                  {!loadedImages[1] && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+                  )}
+                  {heroProducts[1]?.image ? (
+                    <img 
+                      src={`${heroProducts[1].image}?w=500&q=60`} 
+                      alt={heroProducts[1].title} 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={() => handleImageLoad(1)}
+                      style={{filter: loadedImages[1] ? 'none' : 'blur(10px)'}}
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-xs">No image</p>
+                  )}
                 </div>
               </div>
               <h2 className="text-4xl sm:text-5xl font-bold text-gray-900 mb-2">ULTIMATE</h2>
               <h3 className="text-5xl sm:text-6xl font-bold text-gray-800 mb-4 tracking-wider">SALE</h3>
               <p className="text-gray-600 mb-6 text-sm uppercase tracking-wider">New Collection</p>
-              <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded font-semibold transition-colors shadow-sm">
+              <button onClick={() => router.push('/shoppage')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded font-semibold transition-colors shadow-sm">
                 SHOP NOW
               </button>
             </div>
@@ -102,13 +155,43 @@ export default function CraftedRootsHomepage() {
             {/* Right Side - Two Images Stacked */}
             <div className="flex flex-col gap-6">
               <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 transform hover:shadow-md transition-all duration-300 flex-1">
-                <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                  <p className="text-gray-500 text-sm">Product Image 2</p>
+                <div className="h-full bg-gray-100 flex items-center justify-center relative min-h-60">
+                  {!loadedImages[2] && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+                  )}
+                  {heroProducts[2]?.image ? (
+                    <img 
+                      src={`${heroProducts[2].image}?w=400&q=60`} 
+                      alt={heroProducts[2].title} 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={() => handleImageLoad(2)}
+                      style={{filter: loadedImages[2] ? 'none' : 'blur(10px)'}}
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-sm">No image</p>
+                  )}
                 </div>
               </div>
               <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 transform hover:shadow-md transition-all duration-300 flex-1">
-                <div className="h-full bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                  <p className="text-gray-500 text-sm">Product Image 3</p>
+                <div className="h-full bg-gray-100 flex items-center justify-center relative min-h-60">
+                  {!loadedImages[3] && (
+                    <div className="absolute inset-0 bg-gray-200 animate-pulse"></div>
+                  )}
+                  {heroProducts[3]?.image ? (
+                    <img 
+                      src={`${heroProducts[3].image}?w=400&q=60`} 
+                      alt={heroProducts[3].title} 
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                      decoding="async"
+                      onLoad={() => handleImageLoad(3)}
+                      style={{filter: loadedImages[3] ? 'none' : 'blur(10px)'}}
+                    />
+                  ) : (
+                    <p className="text-gray-500 text-sm">No image</p>
+                  )}
                 </div>
               </div>
             </div>
@@ -126,7 +209,7 @@ export default function CraftedRootsHomepage() {
               <p className="text-gray-600 leading-relaxed">
                 Get excited and handcrafted with passion. Our handmade crafts are born high-quality natural materials.
               </p>
-              <button className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded font-semibold transition-colors shadow-sm">
+              <button onClick={() => router.push('/shoppage')} className="bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded font-semibold transition-colors shadow-sm">
                 Buy Now
               </button>
               
@@ -151,51 +234,61 @@ export default function CraftedRootsHomepage() {
             </div>
 
             {/* Right Carousel */}
-            <div className="relative">
-              <div className="flex gap-4 overflow-hidden">
-                {dealProducts.map((product, index) => (
-                  <div
-                    key={product.id}
-                    className={`transition-all duration-500 ${
-                      index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute'
-                    }`}
-                    style={{ display: index === currentSlide ? 'block' : 'none' }}
-                  >
-                    <div className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200">
-                      <div className="aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                        <p className="text-gray-500 text-sm">{product.name}</p>
-                      </div>
+            <div className="relative w-full">
+              {dealProducts.length > 0 ? (
+                <>
+                  <div className="relative bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                    <div className="aspect-video w-full bg-gray-100 flex items-center justify-center relative">
+                      {!loadedImages[`deal-${currentSlide}`] && (
+                        <div className="absolute inset-0 bg-gray-200 animate-pulse z-10"></div>
+                      )}
+                      {dealProducts[currentSlide]?.image && (
+                        <img 
+                          src={`${dealProducts[currentSlide].image}?w=600&q=75`} 
+                          alt={dealProducts[currentSlide].title} 
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                          onLoad={() => handleImageLoad(`deal-${currentSlide}`)}
+                        />
+                      )}
+                    </div>
+                    <div className="p-4 text-center">
+                      <h3 className="text-base font-semibold text-gray-900 line-clamp-2">{dealProducts[currentSlide]?.title}</h3>
+                      <p className="text-orange-500 font-bold mt-2 text-lg">₹{dealProducts[currentSlide]?.price}</p>
                     </div>
                   </div>
-                ))}
-              </div>
-              
-              {/* Navigation Arrows */}
-              <button
-                onClick={prevSlide}
-                className="absolute left-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all border border-gray-200"
-              >
-                <ChevronLeft className="w-6 h-6 text-gray-700" />
-              </button>
-              <button
-                onClick={nextSlide}
-                className="absolute right-4 top-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-md hover:shadow-lg transition-all border border-gray-200"
-              >
-                <ChevronRight className="w-6 h-6 text-gray-700" />
-              </button>
 
-              {/* Dots */}
-              <div className="flex justify-center gap-2 mt-6">
-                {dealProducts.map((_, index) => (
+                  {/* Navigation Arrows */}
                   <button
-                    key={index}
-                    onClick={() => setCurrentSlide(index)}
-                    className={`w-3 h-3 rounded-full transition-colors ${
-                      index === currentSlide ? 'bg-gray-900' : 'bg-gray-300'
-                    }`}
-                  />
-                ))}
-              </div>
+                    onClick={prevSlide}
+                    className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 bg-white rounded-full p-3 shadow-md hover:shadow-lg hover:bg-gray-50 transition-all border border-gray-200"
+                  >
+                    <ChevronLeft className="w-6 h-6 text-gray-700" />
+                  </button>
+                  <button
+                    onClick={nextSlide}
+                    className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 bg-white rounded-full p-3 shadow-md hover:shadow-lg hover:bg-gray-50 transition-all border border-gray-200"
+                  >
+                    <ChevronRight className="w-6 h-6 text-gray-700" />
+                  </button>
+
+                  {/* Dots */}
+                  <div className="flex justify-center gap-2 mt-6">
+                    {dealProducts.map((_, index) => (
+                      <button
+                        key={index}
+                        onClick={() => setCurrentSlide(index)}
+                        className={`w-3 h-3 rounded-full transition-colors ${
+                          index === currentSlide ? 'bg-gray-900' : 'bg-gray-300'
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <div className="w-full aspect-video bg-gray-200 animate-pulse rounded-lg"></div>
+              )}
             </div>
           </div>
         </div>
@@ -213,34 +306,7 @@ export default function CraftedRootsHomepage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {newArrivals.map((product) => (
-              <div key={product.id} className="bg-white rounded-lg shadow-sm overflow-hidden border border-gray-200 hover:shadow-md transition-all duration-300 group">
-                <div className="relative aspect-square bg-gradient-to-br from-gray-50 to-gray-100 flex items-center justify-center">
-                  <p className="text-gray-500 text-sm">{product.name}</p>
-                  <button className="absolute top-4 right-4 bg-white rounded-full p-2 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-300">
-                    <Heart className="w-5 h-5 text-gray-400 hover:text-red-500 hover:fill-red-500" />
-                  </button>
-                </div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">{product.name}</h3>
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="flex">
-                      {[...Array(product.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-orange-500 text-orange-500" />
-                      ))}
-                    </div>
-                    <span className="text-sm text-gray-600">({product.reviews})</span>
-                  </div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-sm text-gray-600">({product.reviews}) Customer Reviews</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-2xl font-bold text-gray-900">{product.price}</span>
-                    <button className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded transition-colors">
-                      <ShoppingCart className="w-5 h-5" />
-                    </button>
-                  </div>
-                </div>
-              </div>
+              <ProductCard key={product.public_product_id} product={product} />
             ))}
           </div>
         </div>
