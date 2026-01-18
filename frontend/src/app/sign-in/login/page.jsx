@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import Image from "next/image";
+import { API_BASE, authenticatedFetch } from "@/lib/api";
 export default function Login() {
   const router = useRouter();
 
@@ -30,7 +31,7 @@ export default function Login() {
     setError("");
 
     try {
-      const response = await fetch(" https://craftroots.onrender.com/api/login/", {
+      const response = await fetch(`${API_BASE}/api/login/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
