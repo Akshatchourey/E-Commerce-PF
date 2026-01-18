@@ -21,6 +21,15 @@ export async function fetchProducts(params = {}) {
   return res.json();
 }
 
+// fetch single product by ID
+export async function fetchProductById(productId) {
+  const res = await fetch(`${API_BASE}/api/product/${productId}/`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error("Failed to fetch product");
+  return res.json();
+}
+
 async function refreshToken() {
   const refresh = localStorage.getItem("refresh_token");
   if (!refresh) return null;
@@ -284,4 +293,19 @@ async function safeJson(res) {
   } catch {
     return null;
   }
+}
+
+// Product review api
+export async function createReview(payload) {
+  const res = await authenticatedFetch(`${API_BASE}/api/reviews/create/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to submit review");
+  }
+
+  return res.json();
 }

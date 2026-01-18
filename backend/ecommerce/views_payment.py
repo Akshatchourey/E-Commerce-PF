@@ -125,7 +125,8 @@ class VerifyRazorpayPaymentView(APIView):
 
             # Update order status
             order = Order.objects.get(razorpay_order_id=data['razorpay_order_id'], user=request.user)
-            order.status = "PAID"
+            if order.status != "VERIFIED":
+                order.status = "PAID"
             order.razorpay_payment_id = data['razorpay_payment_id']
             order.razorpay_signature = data['razorpay_signature']
             order.save()
@@ -143,6 +144,7 @@ class VerifyRazorpayPaymentView(APIView):
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RazorpayWebhookView(APIView):
+    permission_classes = []
 
     def post(self, request, *args, **kwargs):
         payload = request.body
@@ -162,16 +164,16 @@ class RazorpayWebhookView(APIView):
 
                 try:
                     order = Order.objects.get(razorpay_order_id=order_id)
-                    if order.status != "PAID":
-                        order.status = "PAID"
-                        order.razorpay_payment_id = payment_id
-                        order.save()
+                    order.status = "VERIFIED"
+                    order.razorpay_payment_id = payment_id
+                    order.save()
 
-                        # Clean up the cart after successful backend verification
-                        CartItem.objects.filter(user=request.user).delete()
+                    # Clean up the cart after successful backend verification
+                    CartItem.objects.filter(user=request.user).delete()
+                    print(f"Webhook Success: Order {order_id} verified.")
                 except Order.DoesNotExist:
                     pass
 
             return Response(status=status.HTTP_200_OK)
-        except Exception:
+        except Exception as e:
             return Response(status=status.HTTP_400_BAD_REQUEST)
