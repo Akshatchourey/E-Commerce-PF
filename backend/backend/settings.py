@@ -153,7 +153,7 @@ RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID','')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET','')
 
 CORS_ALLOWED_ORIGINS = [
-    "https://e-commerce-pf-seven.vercel.app",  # In production domain
+    "https://craftedroots.vercel.app/",  # In production domain
 ]
 CORS_ALNLOW_CREDETIALS = True  # for frontend to send cookies or authentication headers
-CSRF_TRUSTED_ORIGINS = ["http://e-commerce-pf-seven.vercel.app"]  # for session-based authentication
+CSRF_TRUSTED_ORIGINS = ["https://craftedroots.vercel.app/"]  # for session-based authentication
