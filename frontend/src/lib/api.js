@@ -1,7 +1,7 @@
 //functions in this page: getAuthHeader, refreshToken, fetchProducts, authenticatedFetch, addToCart, fetchCartCount,
 
 
-export const API_BASE = "http://127.0.0.1:8000";
+export const API_BASE = " https://craftroots.onrender.com/";
 
 function getAuthHeaders() {
   const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;

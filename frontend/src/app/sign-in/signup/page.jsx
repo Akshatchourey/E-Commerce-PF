@@ -40,7 +40,7 @@ export default function Signup() {
 
     try {
       // The backend RegisterSerializer expects: username, email, password
-      const response = await fetch("http://127.0.0.1:8000/api/register/", {
+      const response = await fetch(" https://craftroots.onrender.com/api/register/", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
