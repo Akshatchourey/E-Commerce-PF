@@ -16,9 +16,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY','')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -31,16 +31,20 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'ecommerce',
+
     'rest_framework_simplejwt',
     'rest_framework.authtoken',
     'corsheaders',
     'rest_framework',
     'rest_framework_simplejwt.token_blacklist',
+
+    'whitenoise.runserver_nostatic',
 ]
 
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -149,11 +153,7 @@ RAZORPAY_KEY_ID = os.environ.get('RAZORPAY_KEY_ID','')
 RAZORPAY_KEY_SECRET = os.environ.get('RAZORPAY_KEY_SECRET','')
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-    "http://localhost:3001",
-    "http://127.0.0.1:3001",
-    # "https://abc.com", # Later in production domain
+    "https://e-commerce-pf-seven.vercel.app",  # In production domain
 ]
-CORS_ALLOW_CREDENTIALS = True  # for frontend to send cookies or authentication headers
-CSRF_TRUSTED_ORIGINS = ["http://localhost:3000", "http://localhost:3001"]  # for session-based authentication
+CORS_ALNLOW_CREDETIALS = True  # for frontend to send cookies or authentication headers
+CSRF_TRUSTED_ORIGINS = ["http://e-commerce-pf-seven.vercel.app"]  # for session-based authentication

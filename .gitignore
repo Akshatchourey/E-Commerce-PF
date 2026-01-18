@@ -30,6 +30,9 @@ frontend/out/
 frontend/build/  # production
 frontend/coverage/  # testing
 
+# test ignore
+frontend/src/
+
 
 # misc
 .DS_Store

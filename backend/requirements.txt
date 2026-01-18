@@ -9,4 +9,5 @@ django-cors-headers==4.9.0
 gunicorn
 uvicorn==0.34.2
 whitenoise==6.9.0
-razorpay==1.4.2
+razorpay
+setuptools
