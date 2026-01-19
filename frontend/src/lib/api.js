@@ -230,10 +230,18 @@ export async function fetchSellerProducts(params = {}) {
 }
 
 export async function createSellerProduct(payload) {
-  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/`, {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  
+  // Check if payload is FormData (file upload)
+  const isFormData = payload instanceof FormData;
+  
+  const res = await fetch(`${API_BASE}/api/seller/products/`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    headers: isFormData ? headers : { ...headers, "Content-Type": "application/json" },
+    body: isFormData ? payload : JSON.stringify(payload),
   });
+  
   if (!res.ok) {
     const err = await safeJson(res);
     throw new Error(err?.detail || err?.error || "Failed to create product");
@@ -250,10 +258,18 @@ export async function fetchSellerProduct(id) {
 }
 
 export async function updateSellerProduct(id, payload) {
-  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${id}/`, {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+  
+  // Check if payload is FormData (file upload)
+  const isFormData = payload instanceof FormData;
+  
+  const res = await fetch(`${API_BASE}/api/seller/products/${id}/`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    headers: isFormData ? headers : { ...headers, "Content-Type": "application/json" },
+    body: isFormData ? payload : JSON.stringify(payload),
   });
+  
   if (!res.ok) {
     const err = await safeJson(res);
     throw new Error(err?.detail || err?.error || "Failed to update product");
@@ -293,4 +309,19 @@ async function safeJson(res) {
   } catch {
     return null;
   }
+}
+
+// Product review api
+export async function createReview(payload) {
+  const res = await authenticatedFetch(`${API_BASE}/api/reviews/create/`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    throw new Error(errorData.error || "Failed to submit review");
+  }
+
+  return res.json();
 }

@@ -14,14 +14,26 @@
      price: "",
      stock: "",
      description: "",
-     image_url: "",
+     category: "",
+     image: null,
    });
+   const [preview, setPreview] = useState(null);
    const [loading, setLoading] = useState(false);
    const [error, setError] = useState("");
  
    function handleChange(e) {
-     const { name, value } = e.target;
-     setForm((f) => ({ ...f, [name]: value }));
+     const { name, value, type, files } = e.target;
+     if (type === "file") {
+       const file = files?.[0];
+       setForm((f) => ({ ...f, [name]: file }));
+       if (file) {
+         const reader = new FileReader();
+         reader.onloadend = () => setPreview(reader.result);
+         reader.readAsDataURL(file);
+       }
+     } else {
+       setForm((f) => ({ ...f, [name]: value }));
+     }
    }
  
    async function handleSubmit(e) {
@@ -29,14 +41,17 @@
      setError("");
      setLoading(true);
      try {
-       const payload = {
-         title: form.title,
-         price: Number(form.price),
-         stock: Number(form.stock),
-         description: form.description,
-         image_url: form.image_url,
-       };
-       await createSellerProduct(payload);
+       const formData = new FormData();
+       formData.append("title", form.title);
+       formData.append("price", Number(form.price));
+       formData.append("stock", Number(form.stock));
+       formData.append("description", form.description);
+       formData.append("category", form.category || "General");
+       if (form.image) {
+         formData.append("image", form.image);
+       }
+       
+       await createSellerProduct(formData);
        router.push("/seller-dashboard/products");
      } catch (err) {
        setError(err.message || "Failed to create product");
@@ -53,24 +68,33 @@
            </CardHeader>
            <form onSubmit={handleSubmit}>
              <CardContent className="space-y-4">
-               {error && <div className="text-red-600">{error}</div>}
+               {error && <div className="text-red-600 mb-4">{error}</div>}
                <div>
                  <label className="text-sm text-gray-600 mb-1 block">Title</label>
                  <Input name="title" value={form.title} onChange={handleChange} required />
                </div>
-               <div className="grid grid-cols-2 gap-4">
+               <div className="grid grid-cols-3 gap-4">
                  <div>
                    <label className="text-sm text-gray-600 mb-1 block">Price</label>
-                   <Input type="number" name="price" value={form.price} onChange={handleChange} required />
+                   <Input type="number" step="0.01" name="price" value={form.price} onChange={handleChange} placeholder="0.00" required />
                  </div>
                  <div>
                    <label className="text-sm text-gray-600 mb-1 block">Stock</label>
-                   <Input type="number" name="stock" value={form.stock} onChange={handleChange} required />
+                   <Input type="number" name="stock" value={form.stock} onChange={handleChange} placeholder="0" required />
+                 </div>
+                 <div>
+                   <label className="text-sm text-gray-600 mb-1 block">Category</label>
+                   <Input name="category" value={form.category} onChange={handleChange} placeholder="e.g., Electronics" />
                  </div>
                </div>
                <div>
-                 <label className="text-sm text-gray-600 mb-1 block">Image URL</label>
-                 <Input name="image_url" value={form.image_url} onChange={handleChange} />
+                 <label className="text-sm text-gray-600 mb-1 block">Product Image</label>
+                 <Input type="file" name="image" onChange={handleChange} accept="image/*" />
+                 {preview && (
+                   <div className="mt-2 w-32 h-32 bg-gray-100 rounded overflow-hidden">
+                     <img src={preview} alt="Preview" className="w-full h-full object-cover" />
+                   </div>
+                 )}
                </div>
                <div>
                  <label className="text-sm text-gray-600 mb-1 block">Description</label>
@@ -79,6 +103,7 @@
                    className="w-full h-24 rounded-md border bg-transparent px-3 py-2 text-sm"
                    value={form.description}
                    onChange={handleChange}
+                   required
                  />
                </div>
              </CardContent>

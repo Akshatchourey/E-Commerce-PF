@@ -79,7 +79,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class ReviewSerializer(serializers.ModelSerializer):
-    user = serializers.CharField(source="user.username")
+    user = serializers.CharField(source="user.username", read_only=True)
 
     class Meta:
         model = Review
@@ -276,7 +276,11 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         return value
 
 class SellerProductSerializer(serializers.ModelSerializer):
-    stock = serializers.IntegerField(write_only=True)
+    stock = serializers.IntegerField(write_only=True, required=False)
+    image = serializers.SerializerMethodField()
+    stock_quantity = serializers.IntegerField(
+        source="inventory.stock_quantity", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = Product
@@ -289,12 +293,21 @@ class SellerProductSerializer(serializers.ModelSerializer):
             "image",
             "category",
             "stock",
+            "stock_quantity",
             "created_at",
         ]
-        read_only_fields = ["id", "public_product_id", "created_at"]
+        read_only_fields = ["id", "public_product_id", "created_at", "stock_quantity"]
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url).replace(
+                "127.0.0.1", "localhost"
+            )
+        return None
 
     def create(self, validated_data):
-        stock = validated_data.pop("stock")
+        stock = validated_data.pop("stock", 0)
         product = Product.objects.create(**validated_data)
         Inventory.objects.create(product=product, stock_quantity=stock)
         return product
@@ -314,7 +327,8 @@ class SellerProductSerializer(serializers.ModelSerializer):
         return instance
 
 class SellerOrderSerializer(serializers.ModelSerializer):
-    customer = serializers.CharField(source="user.username")
+    customer = serializers.CharField(source="user.username", read_only=True)
+    items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -325,4 +339,9 @@ class SellerOrderSerializer(serializers.ModelSerializer):
             "total_amount",
             "created_at",
             "customer",
+            "items",
         ]
+
+    def get_items(self, obj):
+        order_items = obj.items.all()
+        return OrderItemSerializer(order_items, many=True).data

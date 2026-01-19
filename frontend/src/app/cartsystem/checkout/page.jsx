@@ -175,13 +175,13 @@ export default function CheckoutPage() {
                   </div>
                   <div className="col-span-1">
                     <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Area / Colony</label>
-                    <Input name="area" placeholder="e.g. Arera Colony" onChange={handleAddressChange} />
+                    <Input name="area" onChange={handleAddressChange} />
                   </div>
                 </div>
 
                 <div>
                   <label className="text-xs font-bold text-gray-500 uppercase mb-1 block">Landmark (Optional)</label>
-                  <Input name="landmark" placeholder="e.g. Near City Hospital" onChange={handleAddressChange} />
+                  <Input name="landmark" onChange={handleAddressChange} />
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">

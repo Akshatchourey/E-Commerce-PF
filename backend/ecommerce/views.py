@@ -3,7 +3,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth.models import Group
 from .models import Order
 from .serializers import OrderSerializer, SellerOrderSerializer, SellerProductSerializer
-from .models import Product, Offer, CartItem, Wishlist,ContactMessage
+from .models import Product, Offer, CartItem, Wishlist, ContactMessage, Review
 from .decorators import allowed_users
 from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
     OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, \
@@ -356,8 +356,30 @@ class ContactMessageCreateView(APIView):
         if xff:
             return xff.split(",")[0]
         return request.META.get("REMOTE_ADDR")
-    
 
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def create_review(request):
+    product_id = request.data.get("product_id")
+    rating = request.data.get("rating")
+    comment = request.data.get("comment")
+
+    product = get_object_or_404(Product, public_product_id=product_id)
+
+    # Check if user already reviewed
+    if Review.objects.filter(user=request.user, product=product).exists():
+        return Response(
+            {"error": "You have already reviewed this product."},
+            status=400
+        )
+
+    serializer = ReviewSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(user=request.user, product=product)
+        return Response(serializer.data, status=201)
+
+    return Response(serializer.errors, status=400)
 
 class IsSeller(BasePermission):
     def has_permission(self, request, view):
@@ -390,12 +412,24 @@ class SellerProductListCreateView(APIView):
     permission_classes = [IsSeller]
 
     def get(self, request):
-        products = Product.objects.filter(seller=request.user)
-        serializer = SellerProductSerializer(products, many=True)
-        return Response(serializer.data)
+        products = Product.objects.filter(seller=request.user).order_by("-created_at")
+        
+        # Pagination
+        paginator = ProductPagination()
+        paginated_products = paginator.paginate_queryset(products, request)
+        
+        serializer = SellerProductSerializer(
+            paginated_products, 
+            many=True,
+            context={"request": request}
+        )
+        return paginator.get_paginated_response(serializer.data)
 
     def post(self, request):
-        serializer = SellerProductSerializer(data=request.data)
+        serializer = SellerProductSerializer(
+            data=request.data,
+            context={"request": request}
+        )
         if serializer.is_valid():
             serializer.save(seller=request.user)
             return Response(serializer.data, status=201)
@@ -409,13 +443,13 @@ class SellerProductDetailView(APIView):
 
     def get(self, request, pk):
         product = self.get_object(pk, request.user)
-        serializer = SellerProductSerializer(product)
+        serializer = SellerProductSerializer(product, context={"request": request})
         return Response(serializer.data)
 
     def patch(self, request, pk):
         product = self.get_object(pk, request.user)
         serializer = SellerProductSerializer(
-            product, data=request.data, partial=True
+            product, data=request.data, partial=True, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
@@ -434,9 +468,13 @@ class SellerOrdersView(APIView):
         orders = Order.objects.filter(
             items__product__seller=request.user
         ).distinct().order_by("-created_at")
+        
+        # Pagination
+        paginator = ProductPagination()
+        paginated_orders = paginator.paginate_queryset(orders, request)
 
-        serializer = SellerOrderSerializer(orders, many=True)
-        return Response(serializer.data)
+        serializer = SellerOrderSerializer(paginated_orders, many=True, context={"request": request})
+        return paginator.get_paginated_response(serializer.data)
 class SellerOrderUpdateView(APIView):
     permission_classes = [IsSeller]
 

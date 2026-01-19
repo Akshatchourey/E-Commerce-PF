@@ -28,6 +28,7 @@ urlpatterns = [
     path('webhook/razorpay/', views2.RazorpayWebhookView.as_view(), name='razorpay-webhook'),
     # Contact us urls
     path("api/contact/", ContactMessageCreateView.as_view(), name="contact-create"),
+    path("api/reviews/create/", views.create_review, name="create_review"),
     # seller apis 
     path("api/seller/summary/", SellerSummaryView.as_view()),
     path("api/seller/products/", SellerProductListCreateView.as_view()),
