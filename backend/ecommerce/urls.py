@@ -20,6 +20,7 @@ urlpatterns = [
     path('api/wishlist/', views.manage_wishlist, name='manage_wishlist'),
     path('api/transfer-to-cart/', views.transfer_to_cart, name='transfer_to_cart'),
     path('api/user-orders/', views.user_orders, name='user_orders'),
+    path('api/profile/', views.get_user_profile, name='get_user_profile'),
     path('api/transfer-to-wishlist/', views.transfer_to_wishlist, name='transfer_to_wishlist'),
 
     # Razorpay payment urls

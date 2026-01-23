@@ -233,6 +233,27 @@ class TransferToWishlistSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1)
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    date_joined = serializers.DateTimeField(source="user.date_joined", read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "public_user_id",
+            "username",
+            "email",
+            "phone_number",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "date_joined",
+        ]
+
 # Payment serializers
 class OrderItemCreationSerializer(serializers.Serializer):
     product_id = serializers.CharField(max_length=30)
