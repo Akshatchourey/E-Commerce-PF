@@ -34,20 +34,23 @@ class ProductListSerializer(serializers.ModelSerializer):
     
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    is_seller = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["username", "email", "password", "is_seller"]
 
     def create(self, validated_data):
+        is_seller = validated_data.pop("is_seller", False)
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"]
         )
 
-        # Assign default role = user
-        user_group = Group.objects.get(name="user")
+        # Assign role
+        group_name = "seller" if is_seller else "user"
+        user_group, _ = Group.objects.get_or_create(name=group_name)
         user.groups.add(user_group)
 
         return user
