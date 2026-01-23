@@ -1,10 +1,8 @@
 import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from decimal import Decimal, ROUND_HALF_UP
 from django.utils.html import escape
-
+from django.core.mail import EmailMultiAlternatives
+from django.conf import settings
 
 def _format_money(value):
     if not isinstance(value, Decimal):
@@ -89,23 +87,22 @@ def _build_order_email_text(order):
 
 
 def send_order_completed_email(order, to_email=None):
-    smtp_user = os.environ.get("GMAIL_USER", "")
-    smtp_pass = os.environ.get("GMAIL_APP_PASSWORD", "")
-    if not smtp_user or not smtp_pass:
-        raise RuntimeError("Missing GMAIL_USER or GMAIL_APP_PASSWORD")
     recipient = to_email or order.user.email
     subject = f"Order {order.public_order_id} completed"
     html_body = _build_order_email_html(order)
     text_body = _build_order_email_text(order)
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = smtp_user
-    msg["To"] = recipient
-    msg.attach(MIMEText(text_body, "plain", "utf-8"))
-    msg.attach(MIMEText(html_body, "html", "utf-8"))
-    with smtplib.SMTP("smtp.gmail.com", 587) as server:
-        server.starttls()
-        server.login(smtp_user, smtp_pass)
-        server.sendmail(smtp_user, [recipient], msg.as_string())
-    return True
 
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=text_body,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[recipient]
+    )
+    msg.attach_alternative(html_body, "text/html")
+    
+    try:
+        msg.send()
+        return True
+    except Exception as e:
+        print(f"Error sending email: {e}")
+        return False

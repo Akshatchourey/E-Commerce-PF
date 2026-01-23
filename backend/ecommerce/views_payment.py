@@ -14,6 +14,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from .models import Product, Order, OrderItem, CartItem, Offer
 from .serializers import OrderCreationSerializer, PaymentVerificationSerializer
+from .mailers import send_order_completed_email
 
 # Initialize Razorpay Client
 razorpay_client = razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
@@ -134,6 +135,12 @@ class VerifyRazorpayPaymentView(APIView):
             # Clean up the cart after successful purchase
             CartItem.objects.filter(user=request.user).delete()
 
+            # Send Email
+            try:
+                send_order_completed_email(order)
+            except Exception as e:
+                print(f"Failed to send email: {e}")
+
             return Response({"status": "success", "message": "Payment verified and order confirmed."})
 
         except razorpay.errors.SignatureVerificationError:
@@ -168,8 +175,14 @@ class RazorpayWebhookView(APIView):
                     order.razorpay_payment_id = payment_id
                     order.save()
 
-                    # Clean up the cart after successful backend verification
+                     # Clean up the cart after successful backend verification
                     CartItem.objects.filter(user=request.user).delete()
+
+                    try:
+                        send_order_completed_email(order)
+                    except Exception as e:
+                        print(f"Webhook Email Failed: {e}")
+
                     print(f"Webhook Success: Order {order_id} verified.")
                 except Order.DoesNotExist:
                     pass
