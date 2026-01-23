@@ -15,14 +15,15 @@ export default function Signup() {
     email: "",
     password: "",
     confirmPassword: "",
+    isSeller: false,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === "checkbox" ? checked : value,
     }));
   };
 
@@ -50,6 +51,7 @@ export default function Signup() {
           username: formData.username,
           email: formData.email,
           password: formData.password,
+          is_seller: formData.isSeller,
         }),
       });
 
@@ -71,14 +73,14 @@ export default function Signup() {
   };
 
   return (
- <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9EF] via-[#FFF9EF] to-[#F5EFDE] p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#FFF9EF] via-[#FFF9EF] to-[#F5EFDE] p-4">
       <div className="shadow-2xl rounded-xl overflow-hidden">
         <div className="flex w-full max-w-4xl bg-white" style={{ width: '900px', height: '700px' }}>
           <div className="w-1/2 bg-gradient-to-br from-[#8B735E] to-[#A0866F] flex items-center justify-center p-8">
             <div className="text-center">
-              <Image 
-                src="/logo.png" 
-                alt="Crafted Roots - Handcrafted products showcasing quality and tradition" 
+              <Image
+                src="/logo.png"
+                alt="Crafted Roots - Handcrafted products showcasing quality and tradition"
                 width={280}
                 height={280}
                 className="w-full h-auto max-w-[280px] mx-auto rounded-lg shadow-lg"
@@ -165,6 +167,23 @@ export default function Signup() {
                       className="w-full bg-transparent border-0 border-b-2 border-[#D4C5B0] px-0 py-3 text-sm rounded-none placeholder-[#C4B5A0] text-[#3A2E25] focus-visible:ring-0 focus-visible:border-b-2 focus-visible:border-[#8B735E] transition-colors duration-200"
                     />
                   </div>
+
+                  <div className="flex items-center space-x-2 pt-2">
+                    <input
+                      type="checkbox"
+                      id="isSeller"
+                      name="isSeller"
+                      checked={formData.isSeller}
+                      onChange={handleChange}
+                      className="h-4 w-4 rounded border-[#D4C5B0] text-[#8B735E] focus:ring-[#8B735E]"
+                    />
+                    <label
+                      htmlFor="isSeller"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 text-[#3A2E25]"
+                    >
+                      Register as a Seller
+                    </label>
+                  </div>
                 </div>
                 <div className="space-y-4 pt-2">
                   <Button
@@ -185,7 +204,7 @@ export default function Signup() {
                     )}
                   </Button>
 
-                  
+
                   <div className="border-t border-[#E5DDD0] pt-4 space-y-3">
                     <div className="text-center">
                       <Link href="/sign-in/login" className="text-xs text-[#8B7355] hover:text-[#8B735E] font-medium transition duration-200">

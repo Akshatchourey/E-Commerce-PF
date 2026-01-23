@@ -34,20 +34,23 @@ class ProductListSerializer(serializers.ModelSerializer):
     
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    is_seller = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = User
-        fields = ["username", "email", "password"]
+        fields = ["username", "email", "password", "is_seller"]
 
     def create(self, validated_data):
+        is_seller = validated_data.pop("is_seller", False)
         user = User.objects.create_user(
             username=validated_data["username"],
             email=validated_data["email"],
             password=validated_data["password"]
         )
 
-        # Assign default role = user
-        user_group = Group.objects.get(name="user")
+        # Assign role
+        group_name = "seller" if is_seller else "user"
+        user_group, _ = Group.objects.get_or_create(name=group_name)
         user.groups.add(user_group)
 
         return user
@@ -233,6 +236,27 @@ class TransferToWishlistSerializer(serializers.Serializer):
     quantity = serializers.IntegerField(min_value=1)
 
 
+class UserProfileSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(source="user.username", read_only=True)
+    email = serializers.CharField(source="user.email", read_only=True)
+    date_joined = serializers.DateTimeField(source="user.date_joined", read_only=True)
+
+    class Meta:
+        model = UserProfile
+        fields = [
+            "public_user_id",
+            "username",
+            "email",
+            "phone_number",
+            "address_line_1",
+            "address_line_2",
+            "city",
+            "state",
+            "postal_code",
+            "country",
+            "date_joined",
+        ]
+
 # Payment serializers
 class OrderItemCreationSerializer(serializers.Serializer):
     product_id = serializers.CharField(max_length=30)
@@ -276,7 +300,11 @@ class ContactMessageSerializer(serializers.ModelSerializer):
         return value
 
 class SellerProductSerializer(serializers.ModelSerializer):
-    stock = serializers.IntegerField(write_only=True)
+    stock = serializers.IntegerField(write_only=True, required=False)
+    image = serializers.SerializerMethodField()
+    stock_quantity = serializers.IntegerField(
+        source="inventory.stock_quantity", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = Product
@@ -289,12 +317,21 @@ class SellerProductSerializer(serializers.ModelSerializer):
             "image",
             "category",
             "stock",
+            "stock_quantity",
             "created_at",
         ]
-        read_only_fields = ["id", "public_product_id", "created_at"]
+        read_only_fields = ["id", "public_product_id", "created_at", "stock_quantity"]
+
+    def get_image(self, obj):
+        request = self.context.get("request")
+        if obj.image and request:
+            return request.build_absolute_uri(obj.image.url).replace(
+                "127.0.0.1", "localhost"
+            )
+        return None
 
     def create(self, validated_data):
-        stock = validated_data.pop("stock")
+        stock = validated_data.pop("stock", 0)
         product = Product.objects.create(**validated_data)
         Inventory.objects.create(product=product, stock_quantity=stock)
         return product
@@ -314,7 +351,8 @@ class SellerProductSerializer(serializers.ModelSerializer):
         return instance
 
 class SellerOrderSerializer(serializers.ModelSerializer):
-    customer = serializers.CharField(source="user.username")
+    customer = serializers.CharField(source="user.username", read_only=True)
+    items = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
@@ -325,4 +363,9 @@ class SellerOrderSerializer(serializers.ModelSerializer):
             "total_amount",
             "created_at",
             "customer",
+            "items",
         ]
+
+    def get_items(self, obj):
+        order_items = obj.items.all()
+        return OrderItemSerializer(order_items, many=True).data

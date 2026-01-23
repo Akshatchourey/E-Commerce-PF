@@ -156,5 +156,15 @@ RAZORPAY_WEBHOOK_SECRET = os.environ.get('RAZORPAY_WEBHOOK_SECRET','')
 CORS_ALLOWED_ORIGINS = [
     "https://craftedroots.vercel.app/",  # In production domain
 ]
+
 CORS_ALNLOW_CREDETIALS = True  # for frontend to send cookies or authentication headers
 CSRF_TRUSTED_ORIGINS = ["https://craftedroots.vercel.app/"]  # for session-based authentication
+
+# Email Configuration
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
+

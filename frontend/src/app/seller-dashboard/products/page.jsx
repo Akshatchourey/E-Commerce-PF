@@ -5,6 +5,7 @@
  import { Button } from "@/components/ui/button";
  import Link from "next/link";
  import { fetchSellerProducts, deleteSellerProduct } from "@/lib/api";
+ import Image from "next/image";
  
  export default function SellerProductsPage() {
    const [products, setProducts] = useState([]);
@@ -22,11 +23,12 @@
      setError("");
      try {
        const data = await fetchSellerProducts({ page: p });
-       const list = data.results || data.products || [];
+       const list = data.results || data || [];
        setProducts(list);
        setHasNext(Boolean(data.next));
      } catch (e) {
        setError("Failed to load products");
+       console.error(e);
      } finally {
        setLoading(false);
      }
@@ -56,12 +58,13 @@
            </Link>
          </div>
  
-         {error && <div className="text-red-600 mb-4">{error}</div>}
+         {error && <div className="text-red-600 mb-4 p-4 bg-red-50 rounded">{error}</div>}
  
         {loading ? (
           <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-white border-0 shadow-lg rounded-xl p-6 animate-pulse">
+                <div className="h-40 w-full bg-stone-100 rounded mb-4" />
                 <div className="h-5 w-1/2 bg-stone-100 rounded mb-4" />
                 <div className="space-y-2">
                   <div className="h-4 w-1/3 bg-stone-100 rounded" />
@@ -74,23 +77,54 @@
               </div>
             ))}
           </section>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-600 mb-4">No products found</p>
+            <Link href="/seller-dashboard/products/new">
+              <Button>Add Your First Product</Button>
+            </Link>
+          </div>
         ) : (
            <section className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((p, idx) => {
                const id = p.id ?? p.public_product_id;
+               const imageUrl = p.image ? (p.image.startsWith('http') ? p.image : `${p.image}`) : null;
                return (
-                <Card key={id} className="bg-white border-0 shadow-lg animate-slide-up" style={{ animationDelay: `${idx * 60}ms` }}>
+                <Card key={id} className="bg-white border-0 shadow-lg animate-slide-up overflow-hidden" style={{ animationDelay: `${idx * 60}ms` }}>
+                   {imageUrl && (
+                     <div className="relative h-40 w-full bg-gray-200">
+                       <Image
+                         src={imageUrl}
+                         alt={p.title || p.name}
+                         fill
+                         className="object-cover"
+                         onError={(e) => { e.target.style.display = 'none'; }}
+                       />
+                     </div>
+                   )}
                    <CardHeader>
-                     <CardTitle className="text-gray-900">{p.title || p.name || `Product ${id}`}</CardTitle>
+                     <CardTitle className="text-gray-900 text-lg line-clamp-2">{p.title || p.name || `Product ${id}`}</CardTitle>
                    </CardHeader>
                    <CardContent>
-                     <div className="text-sm text-gray-600">Price: {p.price ?? "-"}</div>
-                     <div className="text-sm text-gray-600">Stock: {p.stock ?? p.quantity ?? "-"}</div>
-                     <div className="mt-4 flex gap-3">
+                     <div className="space-y-2 mb-4">
+                       <div className="text-sm text-gray-600">
+                         <span className="font-semibold">Price:</span> ₹{parseFloat(p.price || 0).toFixed(2)}
+                       </div>
+                       <div className="text-sm text-gray-600">
+                         <span className="font-semibold">Stock:</span> {p.stock ?? p.quantity ?? p.inventory?.stock_quantity ?? 0} units
+                       </div>
+                       <div className="text-sm text-gray-600">
+                         <span className="font-semibold">Category:</span> {p.category || 'Uncategorized'}
+                       </div>
+                       <div className="text-xs text-gray-500">
+                         Added: {new Date(p.created_at).toLocaleDateString()}
+                       </div>
+                     </div>
+                     <div className="flex gap-3">
                        <Link href={`/seller-dashboard/products/${id}`}>
-                         <Button variant="outline">Edit</Button>
+                         <Button variant="outline" size="sm">Edit</Button>
                        </Link>
-                       <Button variant="destructive" onClick={() => handleDelete(id)}>Delete</Button>
+                       <Button variant="destructive" size="sm" onClick={() => handleDelete(id)}>Delete</Button>
                      </div>
                    </CardContent>
                  </Card>
@@ -99,11 +133,17 @@
            </section>
          )}
  
-         <div className="flex items-center gap-3 mt-8">
-           <Button variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
-           <span className="text-sm text-gray-600">Page {page}</span>
-           <Button variant="outline" onClick={() => setPage((p) => (hasNext ? p + 1 : p))} disabled={!hasNext}>Next</Button>
-         </div>
+         {!loading && products.length > 0 && (
+           <div className="flex items-center gap-3 mt-8 justify-center">
+             <Button variant="outline" onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={page === 1}>
+               Previous
+             </Button>
+             <span className="text-sm text-gray-600 px-4">Page {page}</span>
+             <Button variant="outline" onClick={() => setPage((p) => p + 1)} disabled={!hasNext}>
+               Next
+             </Button>
+           </div>
+         )}
        </main>
    );
  }

@@ -134,6 +134,12 @@ export async function syncCartWishlist() {
   return res.json();
 }
 
+export async function fetchUserProfile() {
+  const res = await authenticatedFetch(`${API_BASE}/api/profile/`);
+  if (!res.ok) throw new Error("Failed to fetch profile");
+  return res.json();
+}
+
 // Wishlist cache
 let wishlistCache = null;
 let wishlistCacheTime = 0;
@@ -152,11 +158,11 @@ export async function addToWishlist(product_id) {
   }
 
   const data = await res.json();
-  
+
   // Invalidate cache
   wishlistCache = null;
   wishlistCacheTime = 0;
-  
+
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("wishlistUpdated", { detail: { action: "add", productId: product_id } }));
   }
@@ -176,11 +182,11 @@ export async function removeFromWishlist(product_id) {
   }
 
   const data = await res.json();
-  
+
   // Invalidate cache
   wishlistCache = null;
   wishlistCacheTime = 0;
-  
+
   if (typeof window !== "undefined") {
     window.dispatchEvent(new CustomEvent("wishlistUpdated", { detail: { action: "remove", productId: product_id } }));
   }
@@ -190,12 +196,12 @@ export async function removeFromWishlist(product_id) {
 
 export async function fetchWishlist() {
   const now = Date.now();
-  
+
   // Return cached data if available and not expired
   if (wishlistCache && (now - wishlistCacheTime) < CACHE_DURATION) {
     return wishlistCache;
   }
-  
+
   const res = await authenticatedFetch(`${API_BASE}/api/sync-cart-wishlist/`);
   if (res.ok) {
     const data = await res.json();
@@ -230,10 +236,18 @@ export async function fetchSellerProducts(params = {}) {
 }
 
 export async function createSellerProduct(payload) {
-  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/`, {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  // Check if payload is FormData (file upload)
+  const isFormData = payload instanceof FormData;
+
+  const res = await fetch(`${API_BASE}/api/seller/products/`, {
     method: "POST",
-    body: JSON.stringify(payload),
+    headers: isFormData ? headers : { ...headers, "Content-Type": "application/json" },
+    body: isFormData ? payload : JSON.stringify(payload),
   });
+
   if (!res.ok) {
     const err = await safeJson(res);
     throw new Error(err?.detail || err?.error || "Failed to create product");
@@ -250,10 +264,18 @@ export async function fetchSellerProduct(id) {
 }
 
 export async function updateSellerProduct(id, payload) {
-  const res = await authenticatedFetch(`${API_BASE}/api/seller/products/${id}/`, {
+  const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
+  const headers = token ? { Authorization: `Bearer ${token}` } : {};
+
+  // Check if payload is FormData (file upload)
+  const isFormData = payload instanceof FormData;
+
+  const res = await fetch(`${API_BASE}/api/seller/products/${id}/`, {
     method: "PATCH",
-    body: JSON.stringify(payload),
+    headers: isFormData ? headers : { ...headers, "Content-Type": "application/json" },
+    body: isFormData ? payload : JSON.stringify(payload),
   });
+
   if (!res.ok) {
     const err = await safeJson(res);
     throw new Error(err?.detail || err?.error || "Failed to update product");
