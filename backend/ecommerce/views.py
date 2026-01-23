@@ -8,7 +8,7 @@ from .decorators import allowed_users
 from .serializers import ProductListSerializer, RegisterSerializer, LoginSerializer, ProductDetailSerializer, \
     OfferApplySerializer, CartItemSerializer, WishlistSerializer, AddToCartSerializer, UpdateCartSerializer, \
     AddToWishlistSerializer, RemoveFromWishlistSerializer, RemoveFromCartSerializer, TransferToCartSerializer, \
-    TransferToWishlistSerializer,ContactMessageSerializer
+    TransferToWishlistSerializer,ContactMessageSerializer, UserProfileSerializer
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -297,6 +297,19 @@ def user_orders(request):
         "count": orders.count(),
         "orders": serializer.data
     })
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    user = request.user
+    
+    # Ensure profile exists
+    if not hasattr(user, 'profile'):
+        from .models import UserProfile
+        UserProfile.objects.create(user=user)
+
+    serializer = UserProfileSerializer(user.profile, context={"request": request})
+    return Response(serializer.data)
 
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
