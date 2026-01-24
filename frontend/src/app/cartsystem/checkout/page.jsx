@@ -16,6 +16,7 @@ export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
+  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
 
   // Detailed UI States for Address
   const [addressDetails, setAddressDetails] = useState({
@@ -85,16 +86,19 @@ export default function CheckoutPage() {
   const handlePayment = async (e) => {
     e.preventDefault();
 
-    // Validate detailed fields
+    // 1. Check if Razorpay is actually loaded to prevent "Razorpay is not defined"
+    if (typeof window.Razorpay === 'undefined') {
+      alert("Razorpay SDK is still loading. Please try again in a second.");
+      return;
+    }
+
     const { houseNo, area, city, state, pincode } = addressDetails;
     if (!houseNo || !area || !city || !state || !pincode || !phoneNumber) {
       alert("Please fill in all required delivery fields.");
       return;
     }
 
-    // Concatenate fields for the backend "shipping_address" field
     const fullAddress = `${houseNo}, ${area}, ${addressDetails.landmark ? addressDetails.landmark + ', ' : ''}${city}, ${state} - ${pincode}`;
-
     setProcessing(true);
 
     try {
@@ -117,8 +121,8 @@ export default function CheckoutPage() {
 
       const options = {
         key: orderData.key_id,
-        amount: orderData.amount,
-        currency: orderData.currency,
+        amount: orderData.amount.toString(),
+        currency: "INR",
         name: "Crafted Roots",
         description: "Order Payment",
         order_id: orderData.razorpay_order_id,
@@ -136,6 +140,12 @@ export default function CheckoutPage() {
             router.push("/cartsystem/complete");
           } else {
             alert("Payment verification failed.");
+            setProcessing(false); // Reset button on failure
+          }
+        },
+        modal: {
+          ondismiss: function() {
+            setProcessing(false); // CRITICAL: Reset the button if the user closes the popup
           }
         },
         prefill: { contact: phoneNumber },
@@ -146,16 +156,18 @@ export default function CheckoutPage() {
       rzp.open();
     } catch (error) {
       alert(error.message);
-    } finally {
       setProcessing(false);
     }
   };
-
   if (loading) return <div className="p-20 text-center font-serif text-[#8B735E]">Loading Checkout...</div>;
 
   return (
     <div className="min-h-screen bg-[#F5F5F5]">
-      <Script src="https://checkout.razorpay.com/v1/checkout.js" />
+      <Script
+        src="https://checkout.razorpay.com/v1/checkout.js"
+        onLoad={() => setIsScriptLoaded(true)}
+        onError={() => alert("Failed to load payment gateway.")}
+      />
       <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 py-12">
@@ -272,7 +284,7 @@ export default function CheckoutPage() {
 
               <Button
                 onClick={handlePayment}
-                disabled={processing}
+                disabled={processing || !isScriptLoaded}
                 className="w-full bg-[#3A2E25] hover:bg-black text-white h-14 text-lg font-bold rounded shadow-lg"
               >
                 {processing ? "Processing..." : "Complete Order"}
