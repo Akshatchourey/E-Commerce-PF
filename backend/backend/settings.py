@@ -141,7 +141,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_ROOT = 'media/'
 MEDIA_URL = f'https://%s.s3.%s.amazonaws.com/' % (os.environ.get('AWS_STORAGE_BUCKET_NAME',''), 'eu-north-1')
