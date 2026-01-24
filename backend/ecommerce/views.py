@@ -17,6 +17,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import BasePermission
+from rest_framework.parsers import MultiPartParser, FormParser
 from django.db import models
 
 # Create your views here.
@@ -423,6 +424,7 @@ class SellerSummaryView(APIView):
 
 class SellerProductListCreateView(APIView):
     permission_classes = [IsSeller]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get(self, request):
         products = Product.objects.filter(seller=request.user).order_by("-created_at")
@@ -450,6 +452,7 @@ class SellerProductListCreateView(APIView):
 
 class SellerProductDetailView(APIView):
     permission_classes = [IsSeller]
+    parser_classes = [MultiPartParser, FormParser]
 
     def get_object(self, pk, user):
         return get_object_or_404(Product, id=pk, seller=user)
