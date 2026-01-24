@@ -9,7 +9,13 @@ const nextConfig = {
     ];
   },
   images: {
+    unoptimized: true,
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'craftedroot-v1.s3.amazonaws.com',
+        pathname: '/**',
+      },
       {
         protocol: 'http',
         hostname: '127.0.0.1',
