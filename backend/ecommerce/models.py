@@ -51,6 +51,24 @@ class Product(models.Model):
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.pk:
+            try:
+                old = Product.objects.get(pk=self.pk)
+                if old.image and self.image and old.image != self.image:
+                    old.image.delete(save=False)
+            except Product.DoesNotExist:
+                pass
+        
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        if self.image:  # Check if there is an image
+            self.image.delete(save=False)
+
+        super().delete(*args, **kwargs)  # Delete the model instance
+
+
     def __str__(self):
         return f"{self.title}"
 

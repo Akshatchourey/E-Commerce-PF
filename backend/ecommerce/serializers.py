@@ -301,7 +301,7 @@ class ContactMessageSerializer(serializers.ModelSerializer):
 
 class SellerProductSerializer(serializers.ModelSerializer):
     stock = serializers.IntegerField(write_only=True, required=False)
-    image = serializers.SerializerMethodField()
+    # image = serializers.SerializerMethodField() # Removed to allow writing
     stock_quantity = serializers.IntegerField(
         source="inventory.stock_quantity", read_only=True, allow_null=True
     )
@@ -322,13 +322,13 @@ class SellerProductSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "public_product_id", "created_at", "stock_quantity"]
 
-    def get_image(self, obj):
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
         request = self.context.get("request")
-        if obj.image and request:
-            return request.build_absolute_uri(obj.image.url).replace(
-                "127.0.0.1", "localhost"
-            )
-        return None
+        if instance.image and request:
+            image_url = request.build_absolute_uri(instance.image.url).replace("127.0.0.1", "localhost")
+            ret['image'] = image_url
+        return ret
 
     def create(self, validated_data):
         stock = validated_data.pop("stock", 0)
