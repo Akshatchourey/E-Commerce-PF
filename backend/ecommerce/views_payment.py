@@ -1,5 +1,6 @@
 import razorpay
 import json
+import threading
 from decimal import Decimal
 from django.conf import settings
 from django.db import transaction
@@ -135,11 +136,9 @@ class VerifyRazorpayPaymentView(APIView):
             # Clean up the cart after successful purchase
             CartItem.objects.filter(user=request.user).delete()
 
-            # Send Email
-            try:
-                send_order_completed_email(order)
-            except Exception as e:
-                print(f"Failed to send email: {e}")
+            # Send Email using multiThreading
+            email_thread = threading.Thread(target=send_order_completed_email, args=(order,))
+            email_thread.start()
 
             return Response({"status": "success", "message": "Payment verified and order confirmed."})
 
@@ -175,8 +174,8 @@ class RazorpayWebhookView(APIView):
                     order.razorpay_payment_id = payment_id
                     order.save()
 
-                     # Clean up the cart after successful backend verification
-                    CartItem.objects.filter(user=request.user).delete()
+                    # Clean up the cart after successful backend verification
+                    CartItem.objects.filter(user=order.user).delete()
 
                     try:
                         send_order_completed_email(order)
